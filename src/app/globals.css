@@ -1,0 +1,4 @@
+/* Keep Tailwind available, but the primary styling will come from checkout-design.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
