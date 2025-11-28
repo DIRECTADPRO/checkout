@@ -1,16 +1,17 @@
-/* FILE: src/app/upsell/page.tsx */
+/* FILE: src/app/[slug]/upsell/page.tsx */
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 // --- DYNAMIC BACKGROUND ---
 const DynamicBackground = () => (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1, background: '#F9FAFB', overflow: 'hidden' }}>
-        <style jsx>{`
+        {/* FIX: Using dangerouslySetInnerHTML for keyframes */}
+        <style dangerouslySetInnerHTML={{__html: `
             @keyframes float { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(30px,-50px) scale(1.1); } 66% { transform: translate(-20px,20px) scale(0.9); } 100% { transform: translate(0,0) scale(1); } }
             @keyframes float-delayed { 0% { transform: translate(0,0) scale(1); } 33% { transform: translate(-30px,50px) scale(1.1); } 66% { transform: translate(20px,-20px) scale(0.9); } 100% { transform: translate(0,0) scale(1); } }
-        `}</style>
+        `}} />
         <div style={{ position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw', background: 'radial-gradient(circle, rgba(106,69,255,0.15) 0%, rgba(255,255,255,0) 70%)', filter: 'blur(60px)', borderRadius: '50%', animation: 'float 20s infinite ease-in-out' }} />
         <div style={{ position: 'absolute', bottom: '10%', right: '-10%', width: '60vw', height: '60vw', background: 'radial-gradient(circle, rgba(5,150,105,0.1) 0%, rgba(255,255,255,0) 70%)', filter: 'blur(80px)', borderRadius: '50%', animation: 'float-delayed 25s infinite ease-in-out' }} />
         <div style={{ position: 'absolute', inset: 0, opacity: 0.03, backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")` }} />
@@ -39,13 +40,40 @@ const ProgressBar = () => (
 
 export default function UpsellPage() {
     const router = useRouter();
+    const searchParams = useSearchParams();
     const [loading, setLoading] = useState(false);
 
     const handleAccept = async () => {
+        // Get the Payment Intent ID from the URL (Stripe puts it there automatically)
+        const paymentIntentId = searchParams?.get('payment_intent');
+
+        if (!paymentIntentId) {
+            alert("Order session expired. Please contact support.");
+            return;
+        }
+
         setLoading(true);
-        setTimeout(() => {
+
+        try {
+            const res = await fetch('/api/purchase-upsell', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ originalPaymentIntentId: paymentIntentId })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) {
+                throw new Error(data.error || "Payment failed");
+            }
+
+            // Success!
             router.push('/success');
-        }, 1500);
+            
+        } catch (err: any) {
+            alert(err.message);
+            setLoading(false);
+        }
     };
 
     const handleDecline = () => {
@@ -111,7 +139,6 @@ export default function UpsellPage() {
                     </div>
 
                     {/* --- VALUE STACK + BUTTON (Seamless Card) --- */}
-                    {/* FIX: Removed dashed border. Replaced with solid border. */}
                     <div style={{ border: '1px solid #D1D5DB', borderRadius: '12px', padding: '0', backgroundColor: '#F9FAFB', marginBottom: '25px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                         
                         <div style={{ padding: '20px 20px 15px 20px' }}>

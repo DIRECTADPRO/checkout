@@ -4,13 +4,13 @@
 import React from 'react';
 import { useParams } from 'next/navigation';
 // Using relative path to ensure it finds the file without alias config issues
-import { getProduct } from '../../../lib/products'; 
+import { getProduct } from '@/lib/products'; 
 
 interface DynamicBackgroundProps {
     color: string;
 }
 
-// Fixed: Using standard style injection to avoid TypeScript 'jsx' property errors
+// FIX: Switched from <style jsx> to dangerouslySetInnerHTML to resolve TypeScript error
 const DynamicBackground = ({ color }: DynamicBackgroundProps) => (
     <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1, background: color, overflow: 'hidden' }}>
         <style dangerouslySetInnerHTML={{__html: `
@@ -31,10 +31,10 @@ const DynamicBackground = ({ color }: DynamicBackgroundProps) => (
 export default function DynamicSuccessPage() {
     // Robust way to get params in Client Components
     const params = useParams();
-    const slug = params?.slug as string;
+    const slug = typeof params?.slug === 'string' ? params.slug : 'email-bundle';
     
     // Fail-safe: default to first product if slug is missing during initial render
-    const product = getProduct(slug || 'email-bundle'); 
+    const product = getProduct(slug); 
     const { theme, checkout } = product;
 
     return (

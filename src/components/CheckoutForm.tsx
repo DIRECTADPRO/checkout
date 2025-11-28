@@ -29,11 +29,17 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, children 
     }
 
     setIsProcessing(true); setMessage(null);
+
+    // Get current path to redirect to the correct dynamic sub-route
+    const currentPath = window.location.pathname; // e.g. "/email-bundle"
+    // Strip trailing slash if present just in case
+    const cleanPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
+
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // *** CRITICAL UPDATE: Redirects to the Upsell page instead of Success ***
-        return_url: `${window.location.origin}/upsell`,
+        // *** CRITICAL UPDATE: Redirects dynamically to [slug]/upsell ***
+        return_url: `${window.location.origin}${cleanPath}/upsell`,
         receipt_email: email,
         payment_method_data: { billing_details: { name: fullName.trim(), email: email } }
       },

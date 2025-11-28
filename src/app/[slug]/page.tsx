@@ -1,7 +1,7 @@
 /* FILE: src/app/[slug]/page.tsx */
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
@@ -15,7 +15,8 @@ const formatCurrency = (value: number) => new Intl.NumberFormat('en-US', { style
 const stripePromise = (key: string) => loadStripe(key);
 
 interface CheckoutPageProps {
-  params: { slug: string };
+  // FIX: params is now a Promise in Next.js 15+ App Router
+  params: Promise<{ slug: string }>;
 }
 
 // --- SUB-COMPONENTS ---
@@ -61,7 +62,10 @@ const SocialProof = () => {
 };
 
 export default function DynamicCheckoutPage({ params }: CheckoutPageProps) {
-  const product = getProduct(params.slug);
+  // FIX: Unwrap the params promise using React.use()
+  const { slug } = use(params);
+
+  const product = getProduct(slug);
   const { theme, checkout, bump } = product;
 
   // Calculate Total Value (Fake Retail Price) for the Strikethrough effect
