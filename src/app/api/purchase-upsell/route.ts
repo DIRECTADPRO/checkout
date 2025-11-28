@@ -20,12 +20,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Initial payment incomplete" }, { status: 400 });
     }
 
+    // --- IDEMPOTENCY CHECK (The Strategy) ---
+    // Check if this specific upsell has already been marked as purchased on this transaction
+    if (originalIntent.metadata?.upsell_purchased === 'true') {
+        console.log("Duplicate upsell attempt blocked.");
+        // Return success immediately so the frontend redirects to /success without charging again
+        return NextResponse.json({ success: true, message: "Already purchased" });
+    }
+    // ----------------------------------------
+
     // 2. Identify the Product and Customer
     const productSlug = originalIntent.metadata.product_slug;
     const customerId = typeof originalIntent.customer === 'string' ? originalIntent.customer : originalIntent.customer?.id;
     
-    // We need the payment method ID used in the first transaction.
-    // When setup_future_usage is used, the payment method is attached to the Customer.
+    // We need the payment method ID used in the first transaction
     const paymentMethodId = typeof originalIntent.payment_method === 'string' 
         ? originalIntent.payment_method 
         : originalIntent.payment_method?.id;
@@ -38,20 +46,28 @@ export async function POST(req: NextRequest) {
     const upsellPrice = product.oto.price;
 
     // 3. Create the Upsell Charge (Off-Session)
-    // We confirm immediately because we already have the permission from the first checkout
     const upsellIntent = await stripe.paymentIntents.create({
       amount: upsellPrice,
       currency: "usd",
       customer: customerId,
       payment_method: paymentMethodId,
-      off_session: true, // <--- The logic that allows charging without user interaction
-      confirm: true,     // <--- Process immediately
+      off_session: true, 
+      confirm: true,     
       metadata: {
         is_upsell: "yes",
         parent_transaction: originalPaymentIntentId,
         product_slug: productSlug
       }
     });
+
+    // --- LOCK THE DOOR (The Strategy) ---
+    // Update the original transaction to flag that the upsell is done.
+    await stripe.paymentIntents.update(originalPaymentIntentId, {
+        metadata: {
+            upsell_purchased: 'true'
+        }
+    });
+    // ------------------------------------
 
     return NextResponse.json({ success: true, newOrderId: upsellIntent.id });
 
