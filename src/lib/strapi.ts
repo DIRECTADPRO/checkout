@@ -24,7 +24,8 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
-    // FIXED: Use standard Strapi LHS Bracket Syntax for nested population
+    // FIXED: Use standard Strapi LHS Bracket Syntax for nested population.
+    // This ensures all the nested components (features, theme, etc.) are actually returned.
     const query = new URLSearchParams({
       'filters[slug][$eq]': slug,
       'populate[theme][populate]': '*',
@@ -33,7 +34,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
       'populate[oto][populate][features]': '*',
     }).toString();
 
-    // Added AbortSignal to prevent hanging forever (5 second timeout)
+    // INCREASED TIMEOUT: Set to 15 seconds to allow the server time to wake up/respond
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -42,7 +43,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
         Authorization: `Bearer ${STRAPI_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      cache: 'no-store',
+      cache: 'no-store', // Always fetch fresh data
       signal: controller.signal,
     });
 
@@ -56,13 +57,18 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
     const json = await res.json();
     const item = json.data?.[0] as StrapiProductResponse;
 
-    if (!item) return null;
+    if (!item) {
+      console.warn(`Product not found in Strapi for slug: ${slug}`);
+      return null;
+    }
 
+    // Transform Strapi Data -> Your App's ProductConfig Format
     return {
       id: item.attributes.slug,
       theme: item.attributes.theme,
       checkout: {
         ...item.attributes.checkout,
+        // Safely map features array to simple strings
         features: item.attributes.checkout.features.map((f: any) => f.text || f),
       },
       bump: item.attributes.bump,
@@ -71,8 +77,12 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
         features: item.attributes.oto.features.map((f: any) => f.text || f),
       },
     };
-  } catch (error) {
-    console.error("Failed to fetch product from Strapi (Server might be down):", error);
+  } catch (error: any) {
+    if (error.name === 'AbortError') {
+      console.error("❌ Strapi Request Timed Out (took longer than 15s)");
+    } else {
+      console.error("Failed to fetch product from Strapi:", error);
+    }
     return null;
   }
 }
