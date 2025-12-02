@@ -2,35 +2,34 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import CheckoutClient from './CheckoutClient';
-import { getProductFromStrapi } from '@/lib/strapi'; // <--- The new bridge
-import { getProduct as getStaticProduct } from '@/lib/products'; // Fallback
+import { getProductFromStrapi } from '@/lib/strapi'; // <--- Imports your new bridge
+import { getProduct as getStaticProduct } from '@/lib/products'; // Keeps the old way as a backup
 
-// This function tells Next.js to fetch data before rendering the page
+// This function decides where to get the data
 async function getProductData(slug: string) {
-  // 1. Try to get data from your Live Database (Strapi)
+  // 1. First, try to ask your Live Database (Strapi)
+  console.log(`🔍 Attempting to fetch ${slug} from Strapi...`);
   const strapiProduct = await getProductFromStrapi(slug);
   
   if (strapiProduct) {
-    console.log(`✅ Loaded product from Strapi: ${slug}`);
+    console.log(`✅ SUCCESS: Loaded ${slug} directly from Strapi!`);
     return strapiProduct;
   }
 
-  // 2. Fallback to static file if Strapi is down or empty (Safety Net)
-  console.log(`⚠️ Strapi product not found, falling back to static file: ${slug}`);
+  // 2. If Strapi is down or empty, use the file on your computer (Safety Net)
+  console.log(`⚠️ Strapi returned nothing for ${slug}. Falling back to local static file.`);
   return getStaticProduct(slug);
 }
 
 export default async function DynamicCheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
-  // Await the params object (Next.js 15 requirement)
   const { slug } = await params;
 
-  // Fetch the real data
+  // Run the logic above
   const product = await getProductData(slug);
 
   if (!product) {
     return notFound();
   }
 
-  // Pass the data to your Client Component
   return <CheckoutClient product={product} />;
 }
