@@ -35,7 +35,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     // Added AbortSignal to prevent hanging forever (5 second timeout)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000);
 
     const res = await fetch(`${STRAPI_URL}/api/products?${query}`, {
       headers: {
