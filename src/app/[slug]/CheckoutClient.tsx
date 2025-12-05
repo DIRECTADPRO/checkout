@@ -1,26 +1,32 @@
+/* FILE: src/app/[slug]/CheckoutClient.tsx */
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe, Appearance } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+// 1. Load Stripe (with null check safety)
+const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+if (!stripeKey) console.error("❌ CRITICAL: Stripe Key is missing in .env.local");
+const stripePromise = loadStripe(stripeKey!);
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
   
-  // Initialize with the price from Strapi (700)
+  // 2. State Initialization (Starts with server provided price, usually static 499)
   const [amount, setAmount] = useState<number>(checkout.price);
 
-  // Force update if the prop changes (Fixes the $4.99 -> $7.00 glitch)
+  // 3. THE FIX: Force update when the 'product' prop changes (e.g. Strapi data arrives)
   useEffect(() => {
+    console.log(`🔄 Price Updated from Props: ${checkout.price}`);
     setAmount(checkout.price);
   }, [checkout.price]);
 
-  const appearance = {
-    theme: 'stripe' as const,
+  // 4. Stripe Appearance Options
+  const appearance: Appearance = {
+    theme: 'stripe',
     variables: {
       colorPrimary: theme.primaryColor,
       colorBackground: '#ffffff',
@@ -34,9 +40,16 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   const options = {
     mode: 'payment' as const,
-    amount: amount, // Dynamic amount
+    amount: amount, 
     currency: 'usd',
     appearance,
+  };
+
+  // 5. Bump Logic
+  const handleBumpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = e.target.checked;
+    const newTotal = isChecked ? checkout.price + bump.price : checkout.price;
+    setAmount(newTotal);
   };
 
   const OrderBumpComponent = (
@@ -46,33 +59,40 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       padding: '15px', 
       borderRadius: '8px', 
       marginTop: '20px', 
-      marginBottom: '20px',
-      display: 'flex',
-      alignItems: 'flex-start',
+      marginBottom: '20px', 
+      display: 'flex', 
+      alignItems: 'flex-start', 
       gap: '12px'
     }}>
       <input 
         type="checkbox" 
         id="bump-offer" 
-        style={{marginTop: '4px', width: '18px', height: '18px'}} 
-        onChange={(e) => {
-          setAmount(e.target.checked ? checkout.price + bump.price : checkout.price);
-        }}
+        style={{marginTop: '4px', width: '18px', height: '18px', cursor: 'pointer'}} 
+        onChange={handleBumpChange}
       />
-      <label htmlFor="bump-offer" style={{cursor: 'pointer'}}>
+      <label htmlFor="bump-offer" style={{cursor: 'pointer', flex: 1}}>
         <span style={{fontWeight: '800', color: '#B91C1C', fontSize: '15px', display: 'block', marginBottom: '4px'}}>
            {bump.headline}
         </span>
-        <span style={{fontSize: '14px', color: '#374151', lineHeight: '1.4'}}>
+        <span style={{fontSize: '14px', color: '#374151', lineHeight: '1.4', display: 'block'}}>
            {bump.description}
         </span>
       </label>
     </div>
   );
 
+  // 6. Render Full 2-Column Layout
   return (
     <div style={{ backgroundColor: theme.backgroundColor, minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
-      <div className="checkout-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
+      <div className="checkout-container" style={{ 
+          maxWidth: '1000px', 
+          margin: '0 auto', 
+          padding: '40px 20px', 
+          display: 'grid', 
+          gridTemplateColumns: '1fr 1.2fr', /* 2-Column Layout restored */
+          gap: '40px',
+          alignItems: 'start'
+      }}>
         
         {/* LEFT COLUMN: Product Details */}
         <div className="product-info">
@@ -116,10 +136,12 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              </div>
           </div>
 
+          {/* Wrapper to ensure new instance when amount changes */}
           <Elements key={amount} options={options} stripe={stripePromise}>
             <CheckoutForm 
                 amountInCents={amount} 
-                isPriceUpdating={false}
+                isPriceUpdating={false} 
+                /* Fixed: Removed invalid 'requireShipping' prop */
             >
                 {OrderBumpComponent}
             </CheckoutForm>
