@@ -11,10 +11,10 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
   
-  // Initialize with the prop value, but allow updates
+  // Initialize with the price from Strapi (700)
   const [amount, setAmount] = useState<number>(checkout.price);
 
-  // CRITICAL FIX: Update state if the incoming product prop changes (e.g. from Strapi fetch)
+  // Force update if the prop changes (Fixes the $4.99 -> $7.00 glitch)
   useEffect(() => {
     setAmount(checkout.price);
   }, [checkout.price]);
@@ -34,12 +34,11 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   const options = {
     mode: 'payment' as const,
-    amount: amount, // Dynamic amount from state
+    amount: amount, // Dynamic amount
     currency: 'usd',
     appearance,
   };
 
-  // Order Bump Component (Passed as children to keep form logic clean)
   const OrderBumpComponent = (
     <div className="order-bump" style={{
       backgroundColor: '#FEFCE8', 
@@ -78,7 +77,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         {/* LEFT COLUMN: Product Details */}
         <div className="product-info">
           <div style={{marginBottom: '30px'}}>
-             {/* Dynamic Logo with Fallback */}
              {theme.logoUrl ? (
                 <img src={theme.logoUrl} alt="Logo" style={{ width: theme.logoWidth, marginBottom: '20px' }} />
              ) : (
@@ -118,13 +116,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              </div>
           </div>
 
-          {/* Stripe Elements Provider */}
-          {/* Force re-render when amount changes to update PaymentElement context if needed */}
           <Elements key={amount} options={options} stripe={stripePromise}>
             <CheckoutForm 
                 amountInCents={amount} 
-                isPriceUpdating={false} // Simplified for client-side state
-                requireShipping={false}
+                isPriceUpdating={false}
             >
                 {OrderBumpComponent}
             </CheckoutForm>
