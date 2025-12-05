@@ -2,29 +2,33 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import CheckoutClient from './CheckoutClient';
-import { getProductFromStrapi } from '@/lib/strapi'; // <--- Imports your new bridge
-import { getProduct as getStaticProduct } from '@/lib/products'; // Keeps the old way as a backup
+import { getProductFromStrapi } from '@/lib/strapi';
+import { getProduct as getStaticProduct } from '@/lib/products';
 
-// This function decides where to get the data
+// CRITICAL: Force this page to always be dynamic (No caching)
+export const dynamic = 'force-dynamic';
+
 async function getProductData(slug: string) {
-  // 1. First, try to ask your Live Database (Strapi)
-  console.log(`🔍 Attempting to fetch ${slug} from Strapi...`);
+  // 1. Try to fetch from Strapi (The Live Database)
+  console.log(`🔍 Checking Strapi for: ${slug}...`);
   const strapiProduct = await getProductFromStrapi(slug);
   
   if (strapiProduct) {
-    console.log(`✅ SUCCESS: Loaded ${slug} directly from Strapi!`);
+    console.log(`✅ SUCCESS: Using Strapi Data.`);
+    console.log(`💰 Live Price: $${strapiProduct.checkout.price / 100}`); // Debug Log
     return strapiProduct;
   }
 
-  // 2. If Strapi is down or empty, use the file on your computer (Safety Net)
-  console.log(`⚠️ Strapi returned nothing for ${slug}. Falling back to local static file.`);
-  return getStaticProduct(slug);
+  // 2. Fallback to Static File (Safety Net)
+  console.log(`⚠️ Strapi failed or returned null. Using Static Fallback.`);
+  const staticProduct = getStaticProduct(slug);
+  console.log(`🔒 Static Price: $${staticProduct.checkout.price / 100}`); // Debug Log
+  return staticProduct;
 }
 
 export default async function DynamicCheckoutPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
-  // Run the logic above
   const product = await getProductData(slug);
 
   if (!product) {
