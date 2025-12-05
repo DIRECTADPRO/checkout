@@ -1,17 +1,17 @@
 // FILE: src/lib/strapi.ts
 import { ProductConfig } from './products';
 
+// Updated Interface for Strapi v5 (No 'attributes' nesting)
 interface StrapiProductResponse {
   id: number;
-  attributes: {
-    slug: string;
-    name: string;
-    isActive: boolean;
-    theme: ProductConfig['theme'];
-    checkout: ProductConfig['checkout'];
-    bump: ProductConfig['bump'];
-    oto: ProductConfig['oto'];
-  };
+  documentId: string;
+  slug: string;
+  name: string;
+  isActive: boolean;
+  theme: ProductConfig['theme'];
+  checkout: ProductConfig['checkout'];
+  bump: ProductConfig['bump'];
+  oto: ProductConfig['oto'];
 }
 
 const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://137.184.188.99';
@@ -24,8 +24,6 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
-    // FIXED: Use standard Strapi LHS Bracket Syntax for nested population.
-    // This ensures all the nested components (features, theme, etc.) are actually returned.
     const query = new URLSearchParams({
       'filters[slug][$eq]': slug,
       'populate[theme][populate]': '*',
@@ -34,7 +32,6 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
       'populate[oto][populate][features]': '*',
     }).toString();
 
-    // INCREASED TIMEOUT: Set to 15 seconds to allow the server time to wake up/respond
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
@@ -43,7 +40,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
         Authorization: `Bearer ${STRAPI_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      cache: 'no-store', // Always fetch fresh data
+      cache: 'no-store',
       signal: controller.signal,
     });
 
@@ -55,6 +52,8 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
     }
 
     const json = await res.json();
+    
+    // V5 CHANGE: Data is direct, not in 'attributes'
     const item = json.data?.[0] as StrapiProductResponse;
 
     if (!item) {
@@ -63,18 +62,19 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
     }
 
     // Transform Strapi Data -> Your App's ProductConfig Format
+    // Removed '.attributes' from all paths below
     return {
-      id: item.attributes.slug,
-      theme: item.attributes.theme,
+      id: item.slug,
+      theme: item.theme,
       checkout: {
-        ...item.attributes.checkout,
+        ...item.checkout,
         // Safely map features array to simple strings
-        features: item.attributes.checkout.features.map((f: any) => f.text || f),
+        features: item.checkout.features.map((f: any) => f.text || f),
       },
-      bump: item.attributes.bump,
+      bump: item.bump,
       oto: {
-        ...item.attributes.oto,
-        features: item.attributes.oto.features.map((f: any) => f.text || f),
+        ...item.oto,
+        features: item.oto.features.map((f: any) => f.text || f),
       },
     };
   } catch (error: any) {
