@@ -6,24 +6,19 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
 
-// Initialize Stripe outside of the component to avoid re-initialization on every render
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
   
-  // Initialize with the prop value
-  // This ensures the component starts with the correct price from the server (Strapi)
+  // Initialize with the prop value, but allow updates
   const [amount, setAmount] = useState<number>(checkout.price);
 
-  // CRITICAL FIX: Force update state if the incoming product prop changes
-  // This handles the scenario where the page hydrates with initial state but
-  // the prop updates shortly after from the async server fetch.
+  // CRITICAL FIX: Update state if the incoming product prop changes (e.g. from Strapi fetch)
   useEffect(() => {
     setAmount(checkout.price);
   }, [checkout.price]);
 
-  // Define custom styling for Stripe Elements to match your theme
   const appearance = {
     theme: 'stripe' as const,
     variables: {
@@ -39,13 +34,12 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   const options = {
     mode: 'payment' as const,
-    amount: amount, // Use the dynamic state amount (700 or 2400)
+    amount: amount, // Dynamic amount from state
     currency: 'usd',
     appearance,
   };
 
-  // The Order Bump UI Component
-  // This is passed as a child to CheckoutForm so it sits nicely inside the form
+  // Order Bump Component (Passed as children to keep form logic clean)
   const OrderBumpComponent = (
     <div className="order-bump" style={{
       backgroundColor: '#FEFCE8', 
@@ -62,7 +56,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         type="checkbox" 
         id="bump-offer" 
         style={{marginTop: '4px', width: '18px', height: '18px'}} 
-        // Logic: If checked, add bump price. If unchecked, revert to base price.
         onChange={(e) => {
           setAmount(e.target.checked ? checkout.price + bump.price : checkout.price);
         }}
@@ -82,10 +75,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     <div style={{ backgroundColor: theme.backgroundColor, minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
       <div className="checkout-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
         
-        {/* LEFT COLUMN: Product Information & Testimonials */}
+        {/* LEFT COLUMN: Product Details */}
         <div className="product-info">
           <div style={{marginBottom: '30px'}}>
-             {/* Dynamic Logo Display */}
+             {/* Dynamic Logo with Fallback */}
              {theme.logoUrl ? (
                 <img src={theme.logoUrl} alt="Logo" style={{ width: theme.logoWidth, marginBottom: '20px' }} />
              ) : (
@@ -93,12 +86,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              )}
           </div>
           
-          {/* Product Hero Image */}
           <div className="hero-image" style={{marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}}>
             <img src={checkout.image} alt={checkout.productName} style={{width: '100%', height: 'auto', display: 'block'}} />
           </div>
 
-          {/* Headline & Subhead */}
           <h1 style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1.2', marginBottom: '12px', color: '#111827' }}>
             {checkout.headline}
           </h1>
@@ -106,8 +97,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             {checkout.subhead}
           </p>
 
-          {/* Features List (What's Included) */}
-          <div className="what-you-get" style={{backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E5E7EB', marginBottom: '30px'}}>
+          <div className="what-you-get" style={{backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E5E7EB'}}>
             <h3 style={{fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', fontWeight: '700', marginBottom: '16px'}}>What's Included:</h3>
             <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
               {checkout.features.map((feature, i) => (
@@ -119,7 +109,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           </div>
 
           {/* RESTORED: Social Proof / Testimonials */}
-          <div className="testimonials-section">
+          <div className="testimonials-section" style={{ marginTop: '30px' }}>
              <h3 style={{fontSize: '12px', fontWeight: '800', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px'}}>Trusted by Creators</h3>
              <div style={{display: 'grid', gap: '16px'}}>
                 <div className="testimonial" style={{backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #E5E7EB'}}>
@@ -134,10 +124,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
           </div>
-
         </div>
 
-        {/* RIGHT COLUMN: Checkout Form & Payment */}
+        {/* RIGHT COLUMN: Checkout Form */}
         <div className="checkout-form-wrapper" style={{ backgroundColor: 'white', padding: '32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)', border: '1px solid #F3F4F6', height: 'fit-content' }}>
           <div className="order-summary" style={{marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #E5E7EB'}}>
              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px'}}>
@@ -151,8 +140,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           <Elements key={amount} options={options} stripe={stripePromise}>
             <CheckoutForm 
                 amountInCents={amount} 
-                isPriceUpdating={false}
-                // REMOVED: requireShipping={false} because it caused TypeScript error
+                isPriceUpdating={false} // Simplified for client-side state
             >
                 {OrderBumpComponent}
             </CheckoutForm>
