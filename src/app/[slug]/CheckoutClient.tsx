@@ -147,6 +147,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           </div>
 
           {/* Stripe Elements Provider */}
+          {/* Force re-render when amount changes to update PaymentElement context if needed */}
           <Elements key={amount} options={options} stripe={stripePromise}>
             <CheckoutForm 
                 amountInCents={amount} 
