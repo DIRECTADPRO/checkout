@@ -1,7 +1,7 @@
 // FILE: src/lib/strapi.ts
+import qs from 'qs'; // <--- The new power tool
 import { ProductConfig } from './products';
 
-// Updated Interface for Strapi v5 (No 'attributes' nesting)
 interface StrapiProductResponse {
   id: number;
   documentId: string;
@@ -24,17 +24,32 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
-    const query = new URLSearchParams({
-      'filters[slug][$eq]': slug,
-      'populate[theme][populate]': '*',
-      'populate[checkout][populate][features]': '*',
-      'populate[bump][populate]': '*',
-      'populate[oto][populate][features]': '*',
-    }).toString();
+    // 1. Construct the Query using 'qs' (The "Good Code" way)
+    // This tells Strapi: "Give me the product matching this slug, AND unpack every single nested component completely."
+    const query = qs.stringify({
+      filters: { slug: { $eq: slug } },
+      populate: {
+        theme: { populate: '*' },
+        checkout: { 
+          populate: {
+            features: true, // Explicitly get the features list
+            image: true     // Ensure image is grabbed if it's a media field
+          } 
+        },
+        bump: { populate: '*' },
+        oto: { 
+          populate: {
+            features: true 
+          } 
+        }
+      },
+    }, { encodeValuesOnly: true });
 
+    // 2. Set a Timeout (Don't hang forever)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
+    // 3. Fetch Data
     const res = await fetch(`${STRAPI_URL}/api/products?${query}`, {
       headers: {
         Authorization: `Bearer ${STRAPI_TOKEN}`,
@@ -53,28 +68,35 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     const json = await res.json();
     
-    // V5 CHANGE: Data is direct, not in 'attributes'
-    const item = json.data?.[0] as StrapiProductResponse;
-
-    if (!item) {
+    // 4. Validate Response
+    if (!json.data || json.data.length === 0) {
       console.warn(`Product not found in Strapi for slug: ${slug}`);
       return null;
     }
 
-    // Transform Strapi Data -> Your App's ProductConfig Format
-    // Removed '.attributes' from all paths below
+    const item = json.data[0] as StrapiProductResponse;
+
+    // 5. Map the Data (Robustly)
+    // We spread (...) the objects to ensure we catch every field Strapi sends (like Price)
     return {
       id: item.slug,
       theme: item.theme,
       checkout: {
-        ...item.checkout,
-        // Safely map features array to simple strings
-        features: item.checkout.features.map((f: any) => f.text || f),
+        ...item.checkout, // <--- This contains the 'price': 700
+        // Guard against empty features to prevent crashes
+        features: item.checkout.features 
+          ? item.checkout.features.map((f: any) => f.text || f)
+          : [],
       },
-      bump: item.bump,
+      bump: {
+        ...item.bump,
+        // Ensure description is passed if it exists
+      },
       oto: {
         ...item.oto,
-        features: item.oto.features.map((f: any) => f.text || f),
+        features: item.oto.features 
+          ? item.oto.features.map((f: any) => f.text || f)
+          : [],
       },
     };
   } catch (error: any) {
