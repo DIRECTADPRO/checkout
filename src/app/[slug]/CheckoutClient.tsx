@@ -7,31 +7,33 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
 
-// 1. Initialize Stripe
+// CRITICAL: This imports your custom design file
+import '@/styles/checkout-design.css';
+
 const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-if (!stripeKey) console.error("❌ CRITICAL: Stripe Key is missing in .env.local");
+if (!stripeKey) console.error("❌ CRITICAL: Stripe Key is missing");
 const stripePromise = loadStripe(stripeKey!);
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
   
-  // 2. State Management
+  // 1. STATE
   const [amount, setAmount] = useState<number>(checkout.price);
 
-  // 3. THE LOGIC FIX: Keeps the price at $7.00
+  // 2. THE FIX: Force the price to update to $7.00
   useEffect(() => {
     if (checkout.price) {
       setAmount(checkout.price);
     }
   }, [checkout.price]);
 
-  // 4. Stripe Appearance (Clean & Minimal)
+  // 3. APPEARANCE: Matching your custom aesthetic
   const appearance: Appearance = {
     theme: 'stripe',
     variables: {
-      colorPrimary: theme.primaryColor || '#2563eb',
+      colorPrimary: theme.primaryColor || '#6A45FF',
       colorBackground: '#ffffff',
-      colorText: '#1f2937',
+      colorText: '#212121',
       borderRadius: '8px',
     },
   };
@@ -47,116 +49,103 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     setAmount(e.target.checked ? checkout.price + bump.price : checkout.price);
   };
 
+  // 4. THE RESTORATION: Using YOUR class names (checkout-grid, card, etc.)
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-gray-900">
+    <div className="checkout-container">
       
-      {/* MAIN CONTAINER */}
-      <div className="max-w-6xl mx-auto px-4 py-10 lg:py-16">
+      {/* HEADER */}
+      <div className="checkout-header">
+         {theme.logoUrl ? (
+            <img src={theme.logoUrl} alt="Logo" className="logo" />
+         ) : (
+            <div className="logo-placeholder">LOGO</div>
+         )}
+         <h1 style={{ color: theme.primaryColor }}>{checkout.headline}</h1>
+         <p>{checkout.subhead}</p>
+      </div>
+
+      {/* GRID LAYOUT */}
+      <div className="checkout-grid">
         
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
-          
-          {/* --- LEFT COLUMN: Product Info (Span 7) --- */}
-          <div className="lg:col-span-7 space-y-8">
-            
-            {/* LOGO: Strictly constrained height */}
-            <div className="mb-6">
-               {theme.logoUrl ? (
-                  <img 
-                    src={theme.logoUrl} 
-                    alt="Logo" 
-                    className="h-12 w-auto object-contain" /* <--- FIXES HUGE LOGO */
-                  />
-               ) : (
-                  <div className="text-2xl font-bold">LOGO</div>
-               )}
-            </div>
-
-            {/* HERO IMAGE */}
-            <div className="rounded-xl overflow-hidden shadow-sm border border-gray-200">
-              <img 
-                src={checkout.image} 
-                alt={checkout.productName} 
-                className="w-full h-auto object-cover" 
-              />
-            </div>
-
-            {/* HEADLINES */}
-            <div>
-              <h1 className="text-3xl lg:text-4xl font-extrabold tracking-tight text-gray-900 mb-4">
-                {checkout.headline}
-              </h1>
-              <p className="text-lg text-gray-600 leading-relaxed">
-                {checkout.subhead}
-              </p>
-            </div>
-
-            {/* WHAT'S INCLUDED */}
-            <div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-wider mb-4">
-                What's Included:
-              </h3>
-              <ul className="space-y-3">
-                {checkout.features.map((feature, i) => (
-                  <li key={i} className="flex items-start gap-3">
-                    <span style={{ color: theme.primaryColor }} className="font-bold text-lg">✓</span>
-                    <span className="text-gray-700">{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-
-          {/* --- RIGHT COLUMN: Checkout Form (Span 5) --- */}
-          <div className="lg:col-span-5 sticky top-8">
-            <div className="bg-white p-6 rounded-2xl shadow-xl border border-gray-100">
+        {/* LEFT COLUMN */}
+        <div className="checkout-main">
+           <div className="card">
+              <div className="card-header-pill">1. What You Get</div>
               
-              {/* ORDER SUMMARY */}
-              <div className="flex justify-between items-end pb-6 border-b border-gray-100 mb-6">
-                <div>
-                   <h2 className="text-lg font-semibold text-gray-700">Order Summary</h2>
-                   <p className="text-sm text-gray-400">Total Today</p>
+              <div className="card-body">
+                <div className="hero-image-wrapper">
+                    <img 
+                        src={checkout.image} 
+                        alt={checkout.productName} 
+                        className="product-image-mockup" 
+                    />
                 </div>
-                <div className="text-3xl font-bold text-gray-900">
-                   ${(amount / 100).toFixed(2)}
+                
+                <ul className="features-list">
+                  {checkout.features.map((feature, i) => (
+                    <li key={i} className="feature-item">
+                       <span className="feature-icon" style={{ backgroundColor: theme.primaryColor }}>✓</span>
+                       <span className="feature-text">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="guarantee-badge">
+                   <img src="/stripe-badge-grey.png" alt="Guarantee" style={{ height: '30px', opacity: 0.7 }} />
+                   <span className="guarantee-text">30-Day Money-Back Guarantee</span>
                 </div>
               </div>
+           </div>
 
-              {/* STRIPE ELEMENTS */}
-              <Elements key={amount} options={options} stripe={stripePromise}>
-                <CheckoutForm amountInCents={amount} isPriceUpdating={false}>
-                    
-                    {/* ORDER BUMP (Inside Form) */}
-                    <div className="mt-6 mb-6 p-4 bg-yellow-50 border-2 border-dashed border-yellow-300 rounded-lg flex gap-3">
-                      <input 
-                        type="checkbox" 
-                        id="bump-offer" 
-                        className="mt-1 w-5 h-5 text-red-600 rounded focus:ring-red-500"
-                        onChange={handleBumpChange}
-                      />
-                      <label htmlFor="bump-offer" className="flex-1 cursor-pointer">
-                        <span className="block font-bold text-red-700 text-sm uppercase mb-1">
-                           {bump.headline}
-                        </span>
-                        <p className="text-sm text-gray-700 leading-snug">
-                           {bump.description}
-                        </p>
-                      </label>
-                    </div>
-
-                </CheckoutForm>
-              </Elements>
-
-              {/* SECURITY BADGE */}
-              <div className="mt-6 text-center">
-                 <div className="inline-flex items-center gap-2 text-xs text-gray-400 bg-gray-50 px-3 py-1 rounded-full">
-                    <span>🔒 Secure 256-bit SSL Encryption</span>
-                 </div>
+           {/* TESTIMONIALS */}
+           <div className="testimonials">
+              <div className="testimonial-card">
+                 <div className="stars">★★★★★</div>
+                 <p>"This system completely changed my workflow."</p>
+                 <div className="author">- Verified User</div>
               </div>
-
-            </div>
-          </div>
-
+           </div>
         </div>
+
+        {/* RIGHT COLUMN */}
+        <div className="checkout-sidebar">
+           <div className="card">
+              <div className="card-header-pill">2. Payment Details</div>
+              
+              <div className="card-body">
+                <div className="summary-row">
+                    <span className="summary-title">Total Today:</span>
+                    <span className="summary-price">${(amount / 100).toFixed(2)}</span>
+                </div>
+
+                <Elements key={amount} options={options} stripe={stripePromise}>
+                    <CheckoutForm amountInCents={amount} isPriceUpdating={false}>
+                        
+                        {/* ORDER BUMP - Using your classes */}
+                        <div className="order-bump">
+                           <label className="bump-label">
+                              <input type="checkbox" onChange={handleBumpChange} />
+                              <div className="bump-content">
+                                 <div className="bump-headline">
+                                    YES! {bump.headline}
+                                 </div>
+                                 <div className="bump-desc">
+                                    {bump.description}
+                                 </div>
+                              </div>
+                           </label>
+                        </div>
+
+                    </CheckoutForm>
+                </Elements>
+                
+                <div className="secure-footer">
+                   🔒 256-bit SSL Secure Payment
+                </div>
+              </div>
+           </div>
+        </div>
+
       </div>
     </div>
   );
