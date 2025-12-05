@@ -1,7 +1,8 @@
 // FILE: src/lib/strapi.ts
-import qs from 'qs'; // <--- The new power tool
+import qs from 'qs';
 import { ProductConfig } from './products';
 
+// Define Interface for Strapi v5 Response
 interface StrapiProductResponse {
   id: number;
   documentId: string;
@@ -24,32 +25,38 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
-    // 1. Construct the Query using 'qs' (The "Good Code" way)
-    // This tells Strapi: "Give me the product matching this slug, AND unpack every single nested component completely."
+    // FIXED QUERY: Simplified populate logic for Strapi v5
     const query = qs.stringify({
-      filters: { slug: { $eq: slug } },
-      populate: {
-        theme: { populate: '*' },
-        checkout: { 
-          populate: {
-            features: true, // Explicitly get the features list
-            image: true     // Ensure image is grabbed if it's a media field
-          } 
+      filters: {
+        slug: {
+          $eq: slug,
         },
-        bump: { populate: '*' },
-        oto: { 
+      },
+      populate: {
+        theme: {
+          populate: '*'
+        },
+        checkout: {
           populate: {
-            features: true 
-          } 
+            features: '*' // Use wildcard for simple component lists
+          }
+        },
+        bump: {
+          populate: '*'
+        },
+        oto: {
+          populate: {
+            features: '*'
+          }
         }
       },
-    }, { encodeValuesOnly: true });
+    }, {
+      encodeValuesOnly: true, // prettify URL
+    });
 
-    // 2. Set a Timeout (Don't hang forever)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 15000);
 
-    // 3. Fetch Data
     const res = await fetch(`${STRAPI_URL}/api/products?${query}`, {
       headers: {
         Authorization: `Bearer ${STRAPI_TOKEN}`,
@@ -62,13 +69,15 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      console.error(`Strapi Error: ${res.status} ${res.statusText}`);
+      // Improved Error Logging to see exactly WHY Strapi rejected it
+      const errorText = await res.text();
+      console.error(`Strapi Error (${res.status}): ${res.statusText}`);
+      console.error("Strapi Response Body:", errorText); 
       return null;
     }
 
     const json = await res.json();
     
-    // 4. Validate Response
     if (!json.data || json.data.length === 0) {
       console.warn(`Product not found in Strapi for slug: ${slug}`);
       return null;
@@ -76,32 +85,26 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     const item = json.data[0] as StrapiProductResponse;
 
-    // 5. Map the Data (Robustly)
-    // We spread (...) the objects to ensure we catch every field Strapi sends (like Price)
     return {
       id: item.slug,
       theme: item.theme,
       checkout: {
-        ...item.checkout, // <--- This contains the 'price': 700
-        // Guard against empty features to prevent crashes
+        ...item.checkout,
         features: item.checkout.features 
-          ? item.checkout.features.map((f: any) => f.text || f)
+          ? item.checkout.features.map((f: any) => f.text || f) 
           : [],
       },
-      bump: {
-        ...item.bump,
-        // Ensure description is passed if it exists
-      },
+      bump: item.bump,
       oto: {
         ...item.oto,
         features: item.oto.features 
-          ? item.oto.features.map((f: any) => f.text || f)
+          ? item.oto.features.map((f: any) => f.text || f) 
           : [],
       },
     };
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      console.error("❌ Strapi Request Timed Out (took longer than 15s)");
+      console.error("❌ Strapi Request Timed Out");
     } else {
       console.error("Failed to fetch product from Strapi:", error);
     }
