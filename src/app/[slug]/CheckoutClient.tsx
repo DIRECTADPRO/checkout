@@ -1,32 +1,31 @@
-/* FILE: src/app/[slug]/CheckoutClient.tsx */
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { loadStripe, Appearance } from '@stripe/stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
 
-// 1. Load Stripe (with null check safety)
-const stripeKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
-if (!stripeKey) console.error("❌ CRITICAL: Stripe Key is missing in .env.local");
-const stripePromise = loadStripe(stripeKey!);
+// Initialize Stripe outside of the component to avoid re-initialization on every render
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
   
-  // 2. State Initialization (Starts with server provided price, usually static 499)
+  // Initialize with the prop value
+  // This ensures the component starts with the correct price from the server (Strapi)
   const [amount, setAmount] = useState<number>(checkout.price);
 
-  // 3. THE FIX: Force update when the 'product' prop changes (e.g. Strapi data arrives)
+  // CRITICAL FIX: Force update state if the incoming product prop changes
+  // This handles the scenario where the page hydrates with initial state but
+  // the prop updates shortly after from the async server fetch.
   useEffect(() => {
-    console.log(`🔄 Price Updated from Props: ${checkout.price}`);
     setAmount(checkout.price);
   }, [checkout.price]);
 
-  // 4. Stripe Appearance Options
-  const appearance: Appearance = {
-    theme: 'stripe',
+  // Define custom styling for Stripe Elements to match your theme
+  const appearance = {
+    theme: 'stripe' as const,
     variables: {
       colorPrimary: theme.primaryColor,
       colorBackground: '#ffffff',
@@ -40,18 +39,13 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   const options = {
     mode: 'payment' as const,
-    amount: amount, 
+    amount: amount, // Use the dynamic state amount (700 or 2400)
     currency: 'usd',
     appearance,
   };
 
-  // 5. Bump Logic
-  const handleBumpChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const isChecked = e.target.checked;
-    const newTotal = isChecked ? checkout.price + bump.price : checkout.price;
-    setAmount(newTotal);
-  };
-
+  // The Order Bump UI Component
+  // This is passed as a child to CheckoutForm so it sits nicely inside the form
   const OrderBumpComponent = (
     <div className="order-bump" style={{
       backgroundColor: '#FEFCE8', 
@@ -59,44 +53,39 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       padding: '15px', 
       borderRadius: '8px', 
       marginTop: '20px', 
-      marginBottom: '20px', 
-      display: 'flex', 
-      alignItems: 'flex-start', 
+      marginBottom: '20px',
+      display: 'flex',
+      alignItems: 'flex-start',
       gap: '12px'
     }}>
       <input 
         type="checkbox" 
         id="bump-offer" 
-        style={{marginTop: '4px', width: '18px', height: '18px', cursor: 'pointer'}} 
-        onChange={handleBumpChange}
+        style={{marginTop: '4px', width: '18px', height: '18px'}} 
+        // Logic: If checked, add bump price. If unchecked, revert to base price.
+        onChange={(e) => {
+          setAmount(e.target.checked ? checkout.price + bump.price : checkout.price);
+        }}
       />
-      <label htmlFor="bump-offer" style={{cursor: 'pointer', flex: 1}}>
+      <label htmlFor="bump-offer" style={{cursor: 'pointer'}}>
         <span style={{fontWeight: '800', color: '#B91C1C', fontSize: '15px', display: 'block', marginBottom: '4px'}}>
            {bump.headline}
         </span>
-        <span style={{fontSize: '14px', color: '#374151', lineHeight: '1.4', display: 'block'}}>
+        <span style={{fontSize: '14px', color: '#374151', lineHeight: '1.4'}}>
            {bump.description}
         </span>
       </label>
     </div>
   );
 
-  // 6. Render Full 2-Column Layout
   return (
     <div style={{ backgroundColor: theme.backgroundColor, minHeight: '100vh', fontFamily: 'system-ui, sans-serif' }}>
-      <div className="checkout-container" style={{ 
-          maxWidth: '1000px', 
-          margin: '0 auto', 
-          padding: '40px 20px', 
-          display: 'grid', 
-          gridTemplateColumns: '1fr 1.2fr', /* 2-Column Layout restored */
-          gap: '40px',
-          alignItems: 'start'
-      }}>
+      <div className="checkout-container" style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px', display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '40px' }}>
         
-        {/* LEFT COLUMN: Product Details */}
+        {/* LEFT COLUMN: Product Information & Testimonials */}
         <div className="product-info">
           <div style={{marginBottom: '30px'}}>
+             {/* Dynamic Logo Display */}
              {theme.logoUrl ? (
                 <img src={theme.logoUrl} alt="Logo" style={{ width: theme.logoWidth, marginBottom: '20px' }} />
              ) : (
@@ -104,10 +93,12 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              )}
           </div>
           
+          {/* Product Hero Image */}
           <div className="hero-image" style={{marginBottom: '20px', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)'}}>
             <img src={checkout.image} alt={checkout.productName} style={{width: '100%', height: 'auto', display: 'block'}} />
           </div>
 
+          {/* Headline & Subhead */}
           <h1 style={{ fontSize: '28px', fontWeight: '800', lineHeight: '1.2', marginBottom: '12px', color: '#111827' }}>
             {checkout.headline}
           </h1>
@@ -115,7 +106,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             {checkout.subhead}
           </p>
 
-          <div className="what-you-get" style={{backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E5E7EB'}}>
+          {/* Features List (What's Included) */}
+          <div className="what-you-get" style={{backgroundColor: 'white', padding: '24px', borderRadius: '12px', border: '1px solid #E5E7EB', marginBottom: '30px'}}>
             <h3 style={{fontSize: '14px', textTransform: 'uppercase', letterSpacing: '0.05em', color: '#6B7280', fontWeight: '700', marginBottom: '16px'}}>What's Included:</h3>
             <ul style={{listStyle: 'none', padding: 0, margin: 0}}>
               {checkout.features.map((feature, i) => (
@@ -125,10 +117,28 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               ))}
             </ul>
           </div>
+
+          {/* RESTORED: Social Proof / Testimonials */}
+          <div className="testimonials-section">
+             <h3 style={{fontSize: '12px', fontWeight: '800', color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px'}}>Trusted by Creators</h3>
+             <div style={{display: 'grid', gap: '16px'}}>
+                <div className="testimonial" style={{backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #E5E7EB'}}>
+                    <div style={{color: '#F59E0B', marginBottom: '8px'}}>★★★★★</div>
+                    <p style={{fontSize: '14px', color: '#374151', fontStyle: 'italic', marginBottom: '8px'}}>"Recovered $400 in lost cart sales automatically. This system paid for itself in 2 hours."</p>
+                    <p style={{fontSize: '12px', fontWeight: '700', color: '#111827'}}>— Sarah J.</p>
+                </div>
+                <div className="testimonial" style={{backgroundColor: 'white', padding: '16px', borderRadius: '8px', border: '1px solid #E5E7EB'}}>
+                    <div style={{color: '#F59E0B', marginBottom: '8px'}}>★★★★★</div>
+                    <p style={{fontSize: '14px', color: '#374151', fontStyle: 'italic', marginBottom: '8px'}}>"I rewrote my welcome sequence in 20 minutes using these templates. Insane value."</p>
+                    <p style={{fontSize: '12px', fontWeight: '700', color: '#111827'}}>— Mark T.</p>
+                </div>
+             </div>
+          </div>
+
         </div>
 
-        {/* RIGHT COLUMN: Checkout Form */}
-        <div className="checkout-form-wrapper" style={{ backgroundColor: 'white', padding: '32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)', border: '1px solid #F3F4F6' }}>
+        {/* RIGHT COLUMN: Checkout Form & Payment */}
+        <div className="checkout-form-wrapper" style={{ backgroundColor: 'white', padding: '32px', borderRadius: '16px', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.15)', border: '1px solid #F3F4F6', height: 'fit-content' }}>
           <div className="order-summary" style={{marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #E5E7EB'}}>
              <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px'}}>
                 <span style={{fontWeight: '600', color: '#374151'}}>{checkout.productName}</span>
@@ -136,19 +146,20 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              </div>
           </div>
 
-          {/* Wrapper to ensure new instance when amount changes */}
+          {/* Stripe Elements Provider */}
           <Elements key={amount} options={options} stripe={stripePromise}>
             <CheckoutForm 
                 amountInCents={amount} 
-                isPriceUpdating={false} 
-                /* Fixed: Removed invalid 'requireShipping' prop */
+                isPriceUpdating={false}
+                // REMOVED: requireShipping={false} because it caused TypeScript error
             >
                 {OrderBumpComponent}
             </CheckoutForm>
           </Elements>
 
           <div style={{marginTop: '24px', textAlign: 'center'}}>
-             <img src="/stripe-badge-grey.png" alt="Powered by Stripe" style={{height: '24px', opacity: 0.6}} />
+             <img src="https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Badge_b86eiv.png" alt="Secure Payment" style={{height: '30px', opacity: 0.8, margin: '0 auto'}} />
+             <p style={{fontSize: '11px', color: '#9CA3AF', marginTop: '8px'}}>Powered by Stripe • 256-bit SSL Encrypted</p>
           </div>
         </div>
 
