@@ -1,8 +1,6 @@
-// FILE: src/lib/strapi.ts
-import qs from 'qs';
 import { ProductConfig } from './products';
 
-// Define Interface for Strapi v5 Response
+// Strapi v5 Response Interface (Flat Structure - No 'attributes')
 interface StrapiProductResponse {
   id: number;
   documentId: string;
@@ -25,86 +23,75 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
-    // FIXED QUERY: Simplified populate logic for Strapi v5
-    const query = qs.stringify({
-      filters: {
-        slug: {
-          $eq: slug,
-        },
-      },
-      populate: {
-        theme: {
-          populate: '*'
-        },
-        checkout: {
-          populate: {
-            features: '*' // Use wildcard for simple component lists
-          }
-        },
-        bump: {
-          populate: '*'
-        },
-        oto: {
-          populate: {
-            features: '*'
-          }
-        }
-      },
-    }, {
-      encodeValuesOnly: true, // prettify URL
-    });
+    // FIXED QUERY: Manually construct the query to avoid 'qs' library issues with Strapi v5
+    // This requests the main product AND fully unpacks all nested components
+    const params = new URLSearchParams();
+    params.append('filters[slug][$eq]', slug);
+    params.append('populate[theme][populate]', '*');
+    params.append('populate[checkout][populate]', '*');
+    params.append('populate[bump][populate]', '*');
+    params.append('populate[oto][populate]', '*');
+
+    const queryString = params.toString();
+    const fullUrl = `${STRAPI_URL}/api/products?${queryString}`;
+
+    // Debug Log: Show exactly what we are asking for
+    console.log(`[Strapi] Fetching: ${fullUrl}`);
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000);
+    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s Timeout
 
-    const res = await fetch(`${STRAPI_URL}/api/products?${query}`, {
+    const res = await fetch(fullUrl, {
       headers: {
         Authorization: `Bearer ${STRAPI_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      cache: 'no-store',
+      cache: 'no-store', // Always fetch fresh data (price changes)
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
     if (!res.ok) {
-      // Improved Error Logging to see exactly WHY Strapi rejected it
+      // Log the ACTUAL error from Strapi (e.g. "Invalid parameter")
       const errorText = await res.text();
       console.error(`Strapi Error (${res.status}): ${res.statusText}`);
-      console.error("Strapi Response Body:", errorText); 
+      console.error("Strapi Response Body:", errorText);
       return null;
     }
 
     const json = await res.json();
-    
-    if (!json.data || json.data.length === 0) {
+    const item = json.data?.[0] as StrapiProductResponse;
+
+    if (!item) {
       console.warn(`Product not found in Strapi for slug: ${slug}`);
       return null;
     }
 
-    const item = json.data[0] as StrapiProductResponse;
+    console.log(`[Strapi] ✅ Successfully loaded: ${item.name} | Price: $${(item.checkout?.price || 0) / 100}`);
 
+    // Transform Strapi Data (Handle v5 Flat Structure)
     return {
       id: item.slug,
       theme: item.theme,
       checkout: {
         ...item.checkout,
-        features: item.checkout.features 
-          ? item.checkout.features.map((f: any) => f.text || f) 
+        // Fix: Ensure features map correctly even if Strapi returns null
+        features: Array.isArray(item.checkout.features) 
+          ? item.checkout.features.map((f: any) => f.text || f)
           : [],
       },
       bump: item.bump,
       oto: {
         ...item.oto,
-        features: item.oto.features 
-          ? item.oto.features.map((f: any) => f.text || f) 
+        features: Array.isArray(item.oto.features) 
+          ? item.oto.features.map((f: any) => f.text || f)
           : [],
       },
     };
   } catch (error: any) {
     if (error.name === 'AbortError') {
-      console.error("❌ Strapi Request Timed Out");
+      console.error("❌ Strapi Request Timed Out (Server took >15s)");
     } else {
       console.error("Failed to fetch product from Strapi:", error);
     }
