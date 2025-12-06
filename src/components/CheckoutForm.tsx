@@ -7,8 +7,8 @@ import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js'
 interface CheckoutFormProps {
     amountInCents: number;
     isPriceUpdating: boolean;
-    productSlug: string;     // Needed for API
-    isBumpSelected: boolean; // Needed for API
+    productSlug: string;
+    isBumpSelected: boolean;
     children?: React.ReactNode; 
 }
 
@@ -32,8 +32,6 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
 
     setIsProcessing(true); setMessage(null);
 
-    // 1. Submit the Elements form first (Validates inputs & collects data)
-    // This fixes the "elements.submit() must be called" error
     const { error: submitError } = await elements.submit();
     if (submitError) {
       setMessage(submitError.message || "Please check your payment details.");
@@ -42,7 +40,6 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
     }
 
     try {
-        // 2. Ask the Backend to create the Payment Intent
         const res = await fetch('/api/manage-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -61,7 +58,6 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
         
         const { clientSecret } = await res.json();
         
-        // 3. Confirm Payment with Stripe using the secret we just got
         const currentPath = window.location.pathname; 
         const cleanPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
 
@@ -91,7 +87,6 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
   return (
     <form id="checkoutForm" onSubmit={handleSubmit}>
         
-        {/* STEP 1 */}
         <div className="form-section">
             <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', fontSize: '18px', fontWeight: '800', letterSpacing: '-0.02em', color: '#111827', marginBottom: '16px' }}>
                 <span style={{color: '#6A45FF', marginRight: '10px', fontSize: '20px'}}>1.</span> Contact Information
@@ -104,12 +99,24 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
             </div>
         </div>
 
-        {/* STEP 2 */}
         <div className="form-section">
             <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', fontSize: '18px', fontWeight: '800', letterSpacing: '-0.02em', color: '#111827', marginBottom: '16px' }}>
                 <span style={{color: '#6A45FF', marginRight: '10px', fontSize: '20px'}}>2.</span> Payment Details
             </h3>
-            <PaymentElement id="payment-element" options={{ layout: 'tabs' }} />
+            
+            {/* FIX: Applied Payment Element Options HERE */}
+            <PaymentElement 
+                id="payment-element" 
+                options={{ 
+                    layout: 'tabs',
+                    // This explicitly tells Stripe to ONLY render the Card input
+                    // It removes Apple Pay, Google Pay, and the "Link" popup
+                    wallets: {
+                        applePay: 'never',
+                        googlePay: 'never'
+                    }
+                }} 
+            />
             
             <div style={{marginTop: '8px', display: 'flex', justifyContent: 'flex-start'}}>
                 <div style={{display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#9CA3AF', fontWeight: '500'}}>
