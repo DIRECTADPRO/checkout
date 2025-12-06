@@ -7,7 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
 
-// 1. Import the CSS to ensure layout classes work
+// Import design system
 import '@/styles/checkout-design.css';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
@@ -15,9 +15,10 @@ const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
   
+  // Initialize state with the product price
   const [amount, setAmount] = useState<number>(checkout.price);
 
-  // Logic: Update price when Strapi data loads
+  // CRITICAL LOGIC: Force price update when Strapi data loads
   useEffect(() => {
     if (checkout.price) {
       setAmount(checkout.price);
@@ -44,6 +45,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     appearance,
   };
 
+  // Order Bump Component
   const OrderBumpComponent = (
     <div className="order-bump">
       <label className="order-bump-label" htmlFor="bump-offer">
@@ -80,33 +82,40 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     >
       <div className="checkout-container">
         
-        {/* LAYOUT: Uses your CSS class '.checkout-grid' (1.618fr 1fr) */}
+        {/* 1. GLOBAL HEADER: Centered at top of page (Above Grid) */}
+        <div className="checkout-header" style={{textAlign: 'center', marginBottom: '40px'}}>
+            {theme.logoUrl ? (
+              <img src={theme.logoUrl} alt="Logo" className="logo" style={{margin: '0 auto 20px auto', maxWidth: '200px', display: 'block'}} />
+            ) : (
+              <div className="logo" style={{margin: '0 auto 20px auto', fontSize: '24px', fontWeight: 'bold'}}>LOGO</div>
+            )}
+            <h1 style={{fontSize: '32px', fontWeight: '800', color: '#111827', marginBottom: '12px', lineHeight: '1.2'}}>
+              {checkout.headline}
+            </h1>
+            <p style={{fontSize: '18px', color: '#6B7280', lineHeight: '1.6', maxWidth: '800px', margin: '0 auto'}}>
+              {checkout.subhead}
+            </p>
+        </div>
+
+        {/* LAYOUT: Split Grid */}
         <div className="checkout-grid">
           
-          {/* LEFT COLUMN: Payment Form */}
+          {/* LEFT COLUMN: The "Work" Zone */}
           <div className="checkout-main">
              {/* Boundary Box: White card styling */}
              <div style={{ backgroundColor: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', border: '1px solid #E5E7EB' }}>
                 
-                {/* Header (Logo + Title) */}
-                <div className="checkout-header" style={{marginBottom: '30px', textAlign: 'left'}}>
-                    {theme.logoUrl ? (
-                      <img src={theme.logoUrl} alt="Logo" className="logo" style={{margin: '0 0 20px 0', maxWidth: '180px'}} />
-                    ) : (
-                      <div className="logo" style={{margin: '0 0 20px 0', fontSize: '24px', fontWeight: 'bold'}}>LOGO</div>
-                    )}
-                    <h1 style={{fontSize: '26px', fontWeight: '800', color: '#111827', marginBottom: '8px', lineHeight: '1.2'}}>{checkout.headline}</h1>
-                    <p style={{fontSize: '16px', color: '#6B7280', lineHeight: '1.5'}}>{checkout.subhead}</p>
-                </div>
-
                 {/* Section Header */}
                 <div style={{marginBottom: '20px', borderBottom: '1px solid #F3F4F6', paddingBottom: '10px'}}>
                    <h2 style={{fontSize: '18px', fontWeight: '700', color: '#111827'}}>Customer Information</h2>
                 </div>
 
-                {/* Stripe Form */}
+                {/* Payment Form */}
                 <Elements key={amount} options={options} stripe={stripePromise}>
-                  <CheckoutForm amountInCents={amount} isPriceUpdating={false}>
+                  <CheckoutForm 
+                      amountInCents={amount} 
+                      isPriceUpdating={false}
+                  >
                       {OrderBumpComponent}
                   </CheckoutForm>
                 </Elements>
@@ -118,38 +127,30 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              </div>
           </div>
 
-          {/* RIGHT COLUMN: Summary Card */}
+          {/* RIGHT COLUMN: The "Receipt" Zone */}
           <div className="checkout-sidebar">
-            <div className="card" style={{position: 'relative', overflow: 'visible', marginTop: '20px'}}>
+            <div className="card relative">
               
               {/* Floating Badge */}
-              <div className="card-header-pill" style={{
-                  backgroundColor: '#2E1065', 
-                  position: 'absolute', 
-                  top: '-18px', 
-                  left: '50%', 
-                  transform: 'translateX(-50%)',
-                  padding: '8px 24px',
-                  fontSize: '14px'
-              }}>
+              <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
                 Order Summary
               </div>
               
-              <div style={{marginTop: '15px'}}>
-                 {/* 1. Hero Image (Restored using CSS class) */}
+              <div style={{marginTop: '20px'}}>
+                 {/* Hero Image */}
                  <img 
                    src={checkout.image} 
                    alt={checkout.productName} 
                    className="product-image-mockup" 
                  />
 
-                 {/* 2. Description */}
+                 {/* Description */}
                  <div style={{marginBottom: '20px'}}>
                     <h3 style={{fontSize: '18px', fontWeight: '700', marginBottom: '5px'}}>{checkout.productName}</h3>
                     <p style={{fontSize: '14px', color: '#6B7280'}}>Full Access Digital Package</p>
                  </div>
 
-                 {/* 3. Bullets (No Border per request) */}
+                 {/* What's Included Bullets */}
                  <div style={{backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '16px', marginBottom: '20px'}}>
                     <p style={{fontSize: '11px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.05em'}}>What's Included:</p>
                     <ul className="features-list" style={{margin: 0}}>
@@ -164,7 +165,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
                  <div style={{height: '1px', backgroundColor: '#E5E7EB', margin: '20px 0'}}></div>
                  
-                 {/* 4. Pricing Summary */}
+                 {/* Pricing Summary */}
                  <div>
                     <div className="summary-item">
                         <span className="summary-item-title">{checkout.productName}</span>
@@ -192,6 +193,15 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           </div>
 
         </div>
+
+        {/* FOOTER */}
+        <footer className="checkout-footer">
+            <p>© {new Date().getFullYear()} Built For Speed LLC. All rights reserved.</p>
+            <div className="footer-payment-logos" style={{marginTop: '10px', opacity: 0.6}}>
+                <img src="https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Badge_b86eiv.png" alt="Secured by Stripe" style={{height: '24px', display: 'inline-block'}} />
+            </div>
+        </footer>
+
       </div>
     </div>
   );
