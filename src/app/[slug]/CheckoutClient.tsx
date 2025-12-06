@@ -17,13 +17,18 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
   
   // Initialize state with the product price
   const [amount, setAmount] = useState<number>(checkout.price);
+  
+  // Track Bump State explicitly
+  const [isBumpSelected, setIsBumpSelected] = useState(false);
 
   // CRITICAL LOGIC: Force price update when Strapi data loads
   useEffect(() => {
     if (checkout.price) {
-      setAmount(checkout.price);
+      // If bump was selected, we need to recalculate total based on new base price
+      const basePrice = checkout.price;
+      setAmount(isBumpSelected ? basePrice + bump.price : basePrice);
     }
-  }, [checkout.price]);
+  }, [checkout.price, isBumpSelected, bump.price]);
 
   const appearance = {
     theme: 'stripe' as const,
@@ -52,7 +57,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         <input 
           type="checkbox" 
           id="bump-offer" 
+          checked={isBumpSelected}
           onChange={(e) => {
+            setIsBumpSelected(e.target.checked);
+            // Update amount immediately on click
             setAmount(e.target.checked ? checkout.price + bump.price : checkout.price);
           }}
         />
@@ -73,7 +81,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   return (
     <div 
-      // FIX: Merged style props into one object to prevent "duplicate attribute" error
+      // FIX: Merged all styles into a single object
       style={{ 
         '--color-primary-cta': '#4F46E5',
         '--color-background': '#F3F4F6', 
@@ -99,12 +107,11 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             </p>
         </div>
 
-        {/* LAYOUT: Split Grid (Left: Form, Right: Summary) */}
+        {/* LAYOUT: Split Grid */}
         <div className="checkout-grid">
           
           {/* --- LEFT COLUMN: The "Work" Zone --- */}
           <div className="checkout-main">
-             {/* Boundary Box */}
              <div style={{ 
                  position: 'relative',
                  backgroundColor: 'white', 
@@ -115,7 +122,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  marginTop: '20px'
              }}>
                 
-                {/* Floating Badge */}
                 <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
                   Customer Information
                 </div>
@@ -125,6 +131,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                       <CheckoutForm 
                           amountInCents={amount} 
                           isPriceUpdating={false}
+                          productSlug={product.id}
+                          isBumpSelected={isBumpSelected}
                       >
                           {OrderBumpComponent}
                       </CheckoutForm>
@@ -143,20 +151,17 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               </div>
               
               <div style={{marginTop: '20px'}}>
-                 {/* Hero Image */}
                  <img 
                    src={checkout.image} 
                    alt={checkout.productName} 
                    className="product-image-mockup" 
                  />
 
-                 {/* Description */}
                  <div style={{marginBottom: '20px'}}>
                     <h3 style={{fontSize: '18px', fontWeight: '700', marginBottom: '5px'}}>{checkout.productName}</h3>
                     <p style={{fontSize: '14px', color: '#6B7280'}}>Full Access Digital Package</p>
                  </div>
 
-                 {/* What's Included Bullets */}
                  <div style={{backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '16px', marginBottom: '20px'}}>
                     <p style={{fontSize: '11px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.05em'}}>What's Included:</p>
                     <ul className="features-list" style={{margin: 0}}>
@@ -179,24 +184,20 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               
               <div style={{marginTop: '20px'}}>
                  <div className="pricing-breakdown space-y-3">
-                    {/* Item 1 */}
                     <div className="summary-item">
                         <span className="summary-item-title">{checkout.productName}</span>
                         <span className="summary-item-price" style={{color: '#111827'}}>${(checkout.price / 100).toFixed(2)}</span>
                     </div>
 
-                    {/* Item 2 (Bump) */}
-                    {amount > checkout.price && (
+                    {isBumpSelected && (
                         <div className="summary-item">
                             <span className="summary-item-title">Audit Video Upgrade</span>
                             <span className="summary-item-price" style={{color: '#111827'}}>${(bump.price / 100).toFixed(2)}</span>
                         </div>
                     )}
                     
-                    {/* Divider */}
                     <div style={{height: '1px', backgroundColor: '#E5E7EB', margin: '20px 0'}}></div>
 
-                    {/* Total */}
                     <div className="summary-total" style={{alignItems: 'center', marginTop: '15px', paddingTop: '0', borderTop: 'none'}}>
                         <span style={{fontSize: '16px', fontWeight: '800'}}>Total Due</span>
                         <span style={{fontSize: '24px', fontWeight: '800', color: '#10B981'}}>${(amount / 100).toFixed(2)}</span>
