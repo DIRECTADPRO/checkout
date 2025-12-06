@@ -29,7 +29,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     theme: 'stripe' as const,
     variables: {
       colorPrimary: '#4F46E5', 
-      colorBackground: '#F9FAFB',
+      colorBackground: '#F9FAFB', 
       colorText: '#111827',
       colorDanger: '#df1b41',
       fontFamily: 'Inter, system-ui, sans-serif',
@@ -73,19 +73,21 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   return (
     <div 
+      // FIX: Merged style props into one object to prevent "duplicate attribute" error
       style={{ 
         '--color-primary-cta': '#4F46E5',
         '--color-background': '#F3F4F6', 
-        '--color-text': '#111827' 
+        '--color-text': '#111827',
+        background: 'radial-gradient(circle at 50% 0%, #ffffff 0%, #f3f4f6 80%, #e5e7eb 100%)'
       } as React.CSSProperties}
-      className="min-h-screen bg-[#F3F4F6] font-sans text-gray-900"
+      className="min-h-screen font-sans text-gray-900"
     >
       <div className="checkout-container">
         
         {/* GLOBAL HEADER */}
         <div className="checkout-header" style={{textAlign: 'center', marginBottom: '50px'}}>
             {theme.logoUrl ? (
-              <img src={theme.logoUrl} alt="Logo" className="logo" style={{margin: '0 auto 20px auto', maxWidth: '200px', display: 'block'}} />
+              <img src={theme.logoUrl} alt="Logo" className="logo" style={{margin: '0 auto 20px auto', maxWidth: '90px', display: 'block'}} />
             ) : (
               <div className="logo" style={{margin: '0 auto 20px auto', fontSize: '24px', fontWeight: 'bold'}}>LOGO</div>
             )}
@@ -97,10 +99,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             </p>
         </div>
 
-        {/* LAYOUT: Split Grid */}
+        {/* LAYOUT: Split Grid (Left: Form, Right: Summary) */}
         <div className="checkout-grid">
           
-          {/* --- LEFT COLUMN: PAYMENT FORM --- */}
+          {/* --- LEFT COLUMN: The "Work" Zone --- */}
           <div className="checkout-main">
              {/* Boundary Box */}
              <div style={{ 
@@ -108,53 +110,54 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  backgroundColor: 'white', 
                  borderRadius: '16px', 
                  padding: '32px', 
-                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)', 
+                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', 
                  border: '1px solid #E5E7EB',
                  marginTop: '20px'
              }}>
                 
-                {/* Floating Header Badge */}
+                {/* Floating Badge */}
                 <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
                   Customer Information
                 </div>
 
                 <div style={{marginTop: '15px'}}>
                     <Elements key={amount} options={options} stripe={stripePromise}>
-                      <CheckoutForm amountInCents={amount} isPriceUpdating={false}>
+                      <CheckoutForm 
+                          amountInCents={amount} 
+                          isPriceUpdating={false}
+                      >
                           {OrderBumpComponent}
                       </CheckoutForm>
                     </Elements>
-
-                    <div className="disclaimer" style={{textAlign: 'center', marginTop: '24px'}}>
-                       By providing your card information, you allow Teal Swing to charge your card for future payments in accordance with their terms.
-                    </div>
                 </div>
              </div>
           </div>
 
-          {/* --- RIGHT COLUMN: STACKED CARDS --- */}
-          <div className="checkout-sidebar" style={{display: 'flex', flexDirection: 'column', gap: '40px'}}>
+          {/* --- RIGHT COLUMN: The "Receipt" Zone --- */}
+          <div className="checkout-sidebar">
             
-            {/* CARD 1: WHAT YOU GET (Product Info) */}
+            {/* CARD 1: WHAT YOU GET */}
             <div className="card relative" style={{marginTop: '20px'}}>
               <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
                 What You Get
               </div>
               
               <div style={{marginTop: '20px'}}>
+                 {/* Hero Image */}
                  <img 
                    src={checkout.image} 
                    alt={checkout.productName} 
                    className="product-image-mockup" 
                  />
 
+                 {/* Description */}
                  <div style={{marginBottom: '20px'}}>
                     <h3 style={{fontSize: '18px', fontWeight: '700', marginBottom: '5px'}}>{checkout.productName}</h3>
                     <p style={{fontSize: '14px', color: '#6B7280'}}>Full Access Digital Package</p>
                  </div>
 
-                 {/* Bullets (No Border) */}
-                 <div style={{backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '16px'}}>
+                 {/* What's Included Bullets */}
+                 <div style={{backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '16px', marginBottom: '20px'}}>
                     <p style={{fontSize: '11px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.05em'}}>What's Included:</p>
                     <ul className="features-list" style={{margin: 0}}>
                       {checkout.features.map((feature, i) => (
@@ -168,8 +171,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               </div>
             </div>
 
-            {/* CARD 2: ORDER SUMMARY (Financials) */}
-            <div className="card relative" style={{marginTop: '10px'}}>
+            {/* CARD 2: ORDER SUMMARY */}
+            <div className="card relative" style={{marginTop: '40px'}}>
               <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
                 Order Summary
               </div>
@@ -190,8 +193,11 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                         </div>
                     )}
                     
+                    {/* Divider */}
+                    <div style={{height: '1px', backgroundColor: '#E5E7EB', margin: '20px 0'}}></div>
+
                     {/* Total */}
-                    <div className="summary-total" style={{alignItems: 'center', marginTop: '15px', paddingTop: '15px', borderTop: '1px dashed #E5E7EB'}}>
+                    <div className="summary-total" style={{alignItems: 'center', marginTop: '15px', paddingTop: '0', borderTop: 'none'}}>
                         <span style={{fontSize: '16px', fontWeight: '800'}}>Total Due</span>
                         <span style={{fontSize: '24px', fontWeight: '800', color: '#10B981'}}>${(amount / 100).toFixed(2)}</span>
                     </div>
@@ -202,17 +208,13 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  </div>
               </div>
             </div>
-
           </div>
 
         </div>
 
         {/* FOOTER */}
-        <footer className="checkout-footer">
-            <p>© {new Date().getFullYear()} Built For Speed LLC. All rights reserved.</p>
-            <div className="footer-payment-logos" style={{marginTop: '10px', opacity: 0.6}}>
-                <img src="https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Badge_b86eiv.png" alt="Secured by Stripe" style={{height: '24px', display: 'inline-block'}} />
-            </div>
+        <footer className="checkout-footer" style={{marginTop: '60px', borderTop: '1px solid #E5E7EB', padding: '40px 0', textAlign: 'center'}}>
+            <p style={{color: '#9CA3AF', fontSize: '13px'}}>© {new Date().getFullYear()} Built For Speed LLC. All rights reserved.</p>
         </footer>
 
       </div>
