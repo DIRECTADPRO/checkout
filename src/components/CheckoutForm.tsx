@@ -4,12 +4,11 @@
 import React, { useState } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-// FIX: Updated interface to accept the new props from CheckoutClient
 interface CheckoutFormProps {
     amountInCents: number;
     isPriceUpdating: boolean;
-    productSlug: string;     // New Prop
-    isBumpSelected: boolean; // New Prop
+    productSlug: string;     // Needed for API
+    isBumpSelected: boolean; // Needed for API
     children?: React.ReactNode; 
 }
 
@@ -33,9 +32,17 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
 
     setIsProcessing(true); setMessage(null);
 
+    // 1. Submit the Elements form first (Validates inputs & collects data)
+    // This fixes the "elements.submit() must be called" error
+    const { error: submitError } = await elements.submit();
+    if (submitError) {
+      setMessage(submitError.message || "Please check your payment details.");
+      setIsProcessing(false);
+      return;
+    }
+
     try {
-        // 1. Ask the Backend to create the Payment Intent
-        // This is where we pass the productSlug and bump status so the server knows what to charge
+        // 2. Ask the Backend to create the Payment Intent
         const res = await fetch('/api/manage-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -54,7 +61,7 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
         
         const { clientSecret } = await res.json();
         
-        // 2. Confirm Payment with Stripe using the secret we just got
+        // 3. Confirm Payment with Stripe using the secret we just got
         const currentPath = window.location.pathname; 
         const cleanPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
 
