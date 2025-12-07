@@ -32,6 +32,7 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
 
     setIsProcessing(true); setMessage(null);
 
+    // 1. Validate Form (Client-side)
     const { error: submitError } = await elements.submit();
     if (submitError) {
       setMessage(submitError.message || "Please check your payment details.");
@@ -40,6 +41,7 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
     }
 
     try {
+        // 2. Create Payment Intent (Server-side)
         const res = await fetch('/api/manage-payment-intent', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -58,6 +60,7 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
         
         const { clientSecret } = await res.json();
         
+        // 3. Confirm Payment (Stripe)
         const currentPath = window.location.pathname; 
         const cleanPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
 
@@ -104,17 +107,12 @@ export default function CheckoutForm({ amountInCents, isPriceUpdating, productSl
                 <span style={{color: '#6A45FF', marginRight: '10px', fontSize: '20px'}}>2.</span> Payment Details
             </h3>
             
-            {/* FIX: Applied Payment Element Options HERE */}
+            {/* FIX: Moved layout options here. Disabling wallets removes "HTTPS" warnings */}
             <PaymentElement 
                 id="payment-element" 
                 options={{ 
                     layout: 'tabs',
-                    // This explicitly tells Stripe to ONLY render the Card input
-                    // It removes Apple Pay, Google Pay, and the "Link" popup
-                    wallets: {
-                        applePay: 'never',
-                        googlePay: 'never'
-                    }
+                    wallets: { applePay: 'never', googlePay: 'never' }
                 }} 
             />
             

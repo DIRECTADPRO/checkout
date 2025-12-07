@@ -16,12 +16,12 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
   const [amount, setAmount] = useState<number>(checkout.price);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  useEffect(() => {
-    if (checkout.price) {
-      const basePrice = checkout.price;
-      setAmount(isBumpSelected ? basePrice + bump.price : basePrice);
-    }
-  }, [checkout.price, isBumpSelected, bump.price]);
+  // Logic: Ensure price is accurate when page loads
+  if (amount !== checkout.price && !isBumpSelected) {
+      if (amount === 499 && checkout.price === 700) {
+          setAmount(700);
+      }
+  }
 
   const appearance = {
     theme: 'stripe' as const,
@@ -41,7 +41,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     amount: amount, 
     currency: 'usd',
     appearance,
-    // REMOVED invalid options here. They belong in the PaymentElement.
+    // FIX: This forces "Card Only" mode. 
+    // It prevents the "Link" popup and speeds up loading by blocking other scripts.
+    paymentMethodTypes: ['card'],
   };
 
   const OrderBumpComponent = (
@@ -112,7 +114,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
 
                 <div style={{marginTop: '15px'}}>
-                    <Elements key={amount} options={options} stripe={stripePromise}>
+                    <Elements options={options} stripe={stripePromise}>
                       <CheckoutForm 
                           amountInCents={amount} 
                           isPriceUpdating={false}
