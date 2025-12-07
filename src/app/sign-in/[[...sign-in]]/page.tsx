@@ -4,7 +4,7 @@ export default function SignInPage() {
   return (
     <div className="flex justify-center items-center min-h-screen bg-gray-50">
       <div className="py-10">
-        <SignIn />
+        <SignIn path="/sign-in" />
       </div>
     </div>
   );
