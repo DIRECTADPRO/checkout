@@ -42,6 +42,11 @@
       "type": "component",
       "repeatable": false,
       "component": "config.oto"
+    },
+    "downsell": {
+      "type": "component",
+      "repeatable": false,
+      "component": "config.downsell"
     }
   }
 }

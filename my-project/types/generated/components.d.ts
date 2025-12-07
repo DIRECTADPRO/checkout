@@ -33,6 +33,22 @@ export interface ConfigCheckout extends Struct.ComponentSchema {
   };
 }
 
+export interface ConfigDownsell extends Struct.ComponentSchema {
+  collectionName: 'components_config_downsells';
+  info: {
+    description: "The 'Lite' offer shown after an Upsell decline";
+    displayName: 'Downsell';
+    icon: 'arrowDown';
+  };
+  attributes: {
+    deliveryUrl: Schema.Attribute.String;
+    description: Schema.Attribute.Text;
+    headline: Schema.Attribute.String & Schema.Attribute.Required;
+    price: Schema.Attribute.Integer & Schema.Attribute.Required;
+    stripePriceId: Schema.Attribute.String;
+  };
+}
+
 export interface ConfigOto extends Struct.ComponentSchema {
   collectionName: 'components_config_otos';
   info: {
@@ -81,6 +97,7 @@ declare module '@strapi/strapi' {
     export interface ComponentSchemas {
       'config.bump': ConfigBump;
       'config.checkout': ConfigCheckout;
+      'config.downsell': ConfigDownsell;
       'config.oto': ConfigOto;
       'config.theme': ConfigTheme;
       'shared.feature': SharedFeature;

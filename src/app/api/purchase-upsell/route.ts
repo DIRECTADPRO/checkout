@@ -1,13 +1,21 @@
+/* FILE: src/app/api/purchase-upsell/route.ts */
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
-import { Config } from "@/lib/env";
-import { getProduct } from "@/lib/products";
+import { getProductFromStrapi } from "@/lib/strapi"; 
 
-const stripe = new Stripe(Config.stripeSecretKey, { typescript: true });
+if (!process.env.STRIPE_SECRET_KEY) {
+  throw new Error("STRIPE_SECRET_KEY is missing");
+}
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
+  // FIX: Updated to match your installed SDK version
+  apiVersion: "2025-11-17.clover", 
+  typescript: true,
+});
 
 export async function POST(req: NextRequest) {
   try {
-    const { originalPaymentIntentId } = await req.json();
+    const { originalPaymentIntentId, type = 'oto' } = await req.json();
 
     if (!originalPaymentIntentId) {
       return NextResponse.json({ error: "Missing Transaction ID" }, { status: 400 });
@@ -20,34 +28,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Initial payment incomplete" }, { status: 400 });
     }
 
-    // --- IDEMPOTENCY CHECK (The Strategy) ---
-    // Check if this specific upsell has already been marked as purchased on this transaction
-    if (originalIntent.metadata?.upsell_purchased === 'true') {
-        console.log("Duplicate upsell attempt blocked.");
-        // Return success immediately so the frontend redirects to /success without charging again
+    // --- IDEMPOTENCY CHECK ---
+    const metadataKey = type === 'downsell' ? 'downsell_purchased' : 'upsell_purchased';
+    if (originalIntent.metadata?.[metadataKey] === 'true') {
         return NextResponse.json({ success: true, message: "Already purchased" });
     }
-    // ----------------------------------------
 
-    // 2. Identify the Product and Customer
+    // 2. Identify the Product
     const productSlug = originalIntent.metadata.product_slug;
     const customerId = typeof originalIntent.customer === 'string' ? originalIntent.customer : originalIntent.customer?.id;
     
-    // We need the payment method ID used in the first transaction
     const paymentMethodId = typeof originalIntent.payment_method === 'string' 
         ? originalIntent.payment_method 
         : originalIntent.payment_method?.id;
 
     if (!productSlug || !customerId || !paymentMethodId) {
-       return NextResponse.json({ error: "Cannot process One-Click Upsell: Missing Customer Data" }, { status: 400 });
+       return NextResponse.json({ error: "Missing Customer Data" }, { status: 400 });
     }
 
-    const product = getProduct(productSlug);
-    const upsellPrice = product.oto.price;
+    // 3. Get Price from Strapi
+    const product = await getProductFromStrapi(productSlug);
+    if (!product) throw new Error("Product not found");
 
-    // 3. Create the Upsell Charge (Off-Session)
-    const upsellIntent = await stripe.paymentIntents.create({
-      amount: upsellPrice,
+    // Determine Price based on Type
+    // The TypeScript error is fixed because we updated ProductConfig to include 'downsell'
+    const priceToCharge = type === 'downsell' ? product.downsell?.price : product.oto.price;
+
+    if (!priceToCharge) {
+        throw new Error(`No price found for ${type}`);
+    }
+
+    // 4. Create the Charge
+    const newIntent = await stripe.paymentIntents.create({
+      amount: priceToCharge,
       currency: "usd",
       customer: customerId,
       payment_method: paymentMethodId,
@@ -55,26 +68,25 @@ export async function POST(req: NextRequest) {
       confirm: true,     
       metadata: {
         is_upsell: "yes",
+        type: type,
         parent_transaction: originalPaymentIntentId,
         product_slug: productSlug
       }
     });
 
-    // --- LOCK THE DOOR (The Strategy) ---
-    // Update the original transaction to flag that the upsell is done.
+    // 5. Update Original Transaction
     await stripe.paymentIntents.update(originalPaymentIntentId, {
         metadata: {
-            upsell_purchased: 'true'
+            [metadataKey]: 'true'
         }
     });
-    // ------------------------------------
 
-    return NextResponse.json({ success: true, newOrderId: upsellIntent.id });
+    return NextResponse.json({ success: true, newOrderId: newIntent.id });
 
   } catch (error: any) {
-    console.error("Upsell Error:", error);
+    console.error("Purchase Error:", error);
     return NextResponse.json(
-      { error: "Payment Failed. The card could not be charged." }, 
+      { error: error.message || "Payment Failed" }, 
       { status: 500 }
     );
   }
