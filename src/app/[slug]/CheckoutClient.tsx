@@ -41,9 +41,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     amount: amount, 
     currency: 'usd',
     appearance,
-    // FIX: This forces "Card Only" mode. 
-    // It prevents the "Link" popup and speeds up loading by blocking other scripts.
     paymentMethodTypes: ['card'],
+    // FIX: Added 'as const' to satisfy TypeScript strictness
+    setupFutureUsage: 'off_session' as const, 
   };
 
   const OrderBumpComponent = (

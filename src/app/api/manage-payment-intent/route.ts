@@ -5,12 +5,11 @@ import { getProductFromStrapi } from "@/lib/strapi";
 import { getProduct as getStaticProduct } from '@/lib/products'; 
 
 if (!process.env.STRIPE_SECRET_KEY) {
-  throw new Error("STRIPE_SECRET_KEY is missing in environment variables");
+  throw new Error("STRIPE_SECRET_KEY is missing");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  // FIX: Updated to match your installed SDK version
-  apiVersion: "2025-11-17.clover", 
+  apiVersion: "2025-11-17.clover", // Ensure this matches your version
   typescript: true,
 });
 
@@ -18,38 +17,48 @@ export async function POST(req: NextRequest) {
   try {
     const { productSlug, includeBump, userEmail, userName } = await req.json();
 
-    // 1. FETCH LIVE DATA
+    // 1. FETCH PRODUCT
     let product = await getProductFromStrapi(productSlug);
-
     if (!product) {
-      console.warn(`API: Strapi failed for ${productSlug}, using static fallback.`);
       product = getStaticProduct(productSlug);
     }
-
-    if (!product) {
-      return NextResponse.json({ error: "Product not found" }, { status: 404 });
-    }
+    if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
     // 2. CALCULATE TOTAL
-    let totalAmount = product.checkout.price; // Base Price
-    
+    let totalAmount = product.checkout.price;
     if (includeBump) {
-      totalAmount += product.bump.price; // Add Bump Price
+      totalAmount += product.bump.price;
     }
 
-    console.log(`[API] Creating Intent for: ${userEmail} | Total: ${totalAmount}`);
+    console.log(`[API] Processing: ${userEmail} | Total: $${totalAmount/100}`);
 
-    // 3. CREATE PAYMENT INTENT
+    // 3. GET OR CREATE STRIPE CUSTOMER (Critical for Upsells)
+    // We check if this email already has a customer ID
+    const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
+    let customerId = customers.data.length > 0 ? customers.data[0].id : null;
+
+    if (!customerId) {
+      const newCustomer = await stripe.customers.create({ 
+          email: userEmail, 
+          name: userName,
+          metadata: { first_product: productSlug }
+      });
+      customerId = newCustomer.id;
+    }
+
+    // 4. CREATE INTENT WITH FUTURE USAGE
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: "usd",
+      customer: customerId, // <--- Attach to Customer
+      setup_future_usage: 'off_session', // <--- Permission to charge again later
       receipt_email: userEmail,
       metadata: {
         product: product.checkout.productName,
         hasBump: includeBump ? "true" : "false",
-        customerName: userName
+        customerName: userName,
+        product_slug: productSlug // Save slug for the upsell API to use
       },
-      // CRITICAL FIX: Force "card" only. This disables "Link", Apple Pay, Google Pay.
       payment_method_types: ["card"], 
     });
 
