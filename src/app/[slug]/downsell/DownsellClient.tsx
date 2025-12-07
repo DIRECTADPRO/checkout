@@ -71,9 +71,10 @@ export default function DownsellClient({ product }: { product: ProductConfig }) 
                         {downsell.description}
                     </p>
 
-                    {/* --- SEAMLESS OFFER CARD (ATTACHED BUTTON) --- */}
+                    {/* --- SEAMLESS CARD (FIXES ATTACH ERROR) --- */}
                     <div style={{ border: '1px solid #D1D5DB', borderRadius: '12px', overflow: 'hidden', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.05)' }}>
                         
+                        {/* Info Section */}
                         <div style={{ padding: '25px', backgroundColor: '#F9FAFB' }}>
                             <div style={{display: 'flex', alignItems: 'center', gap: '15px'}}>
                                 <div style={{width: '50px', height: '50px', background: '#E5E7EB', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px'}}>📄</div>
@@ -93,7 +94,7 @@ export default function DownsellClient({ product }: { product: ProductConfig }) 
                             <div style={{fontSize: '32px', fontWeight: '800', color: '#059669'}}>${(downsell.price / 100).toFixed(0)}</div>
                         </div>
 
-                        {/* ATTACHED BUTTON */}
+                        {/* ATTACHED BUTTON (Radius 0) */}
                         <button 
                             onClick={handleAccept}
                             disabled={loading}
@@ -107,7 +108,7 @@ export default function DownsellClient({ product }: { product: ProductConfig }) 
                                 fontWeight: '900',
                                 letterSpacing: '0.02em',
                                 border: 'none',
-                                borderRadius: '0', // Square corners
+                                borderRadius: '0', // ATTACHED
                                 cursor: 'pointer',
                                 transition: 'background 0.2s',
                                 textShadow: '0 1px 2px rgba(0,0,0,0.1)'
