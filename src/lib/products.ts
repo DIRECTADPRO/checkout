@@ -48,6 +48,7 @@ export const products: Record<string, ProductConfig> = {
   "email-bundle": {
     id: "email-bundle",
     theme: {
+      // Green = "Go/Money", Purple = "Royalty/Value". Perfect for high-converting funnels.
       primaryColor: "#059669", 
       accentColor: "#6A45FF",  
       backgroundColor: "#F9FAFB",
@@ -55,35 +56,49 @@ export const products: Record<string, ProductConfig> = {
       logoWidth: "150px"
     },
     checkout: {
-      headline: "Turn New Subscribers Into Buyers Automatically",
-      subhead: "Stop staring at a blank cursor...",
-      productName: "The Next Best Message Book",
+      // HEADLINE: Specific outcome + Timeframe + Objection handling
+      headline: "Steal The Exact '5-Day Welcome Sequence' That Generated $1.3M In Sales (Without Being Pushy)",
+      subhead: "Stop staring at a blinking cursor. Copy-paste these proven templates to turn new subscribers into raving fans and lifetime customers on autopilot.",
+      productName: "The 'Next Best Message' Playbook",
       price: 700, 
       image: "https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Bundle_va8f72.png",
-      features: ["The 7-Figure Blueprint", "Plug-and-Play Templates", "Recover Revenue Scripts"],
+      features: [
+        "The 5-Day 'Trust & Buy' Framework (Value: $97)", 
+        "10x Plug-and-Play Email Templates (Value: $47)", 
+        "The 'Ghost-Buster' Re-engagement Script (Value: $47)"
+      ],
       stripePriceId: "price_CORE_ID" 
     },
     bump: {
-      headline: "Upgrade my order",
-      description: "Get the high-converting subject lines.",
+      // BUMP: Solves the immediate next problem (Getting them to open it)
+      headline: "Wait! Want 80% Higher Open Rates?",
+      description: "Add the **'Click-Magnet' Subject Line Vault**. 500+ fill-in-the-blank headlines proven to get your emails opened. (One-time offer: $17)",
       price: 1700,
       stripePriceId: "price_BUMP_ID"
     },
     oto: {
-      headline: "Want to 10X Your Results?",
-      videoPlaceholder: "WATCH PRESENTATION",
+      // OTO: High-Ticket Promise. Moves from "Writing" to "Technical Security & Traffic"
+      headline: "Wait! Let Me Personally Audit Your Setup To Ensure You Never Land In The Spam Folder.",
+      // Ideally, this video sells the "Audit" and the "Traffic"
+      videoEmbedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1", 
+      videoPlaceholder: "WATCH: How I Scale to 10k Subs",
       price: 14700,
       retailPrice: 29700,
-      features: ["50+ Scripts", "Video Strategy", "Q&A Recordings"],
+      features: [
+        "The 'Inbox Defense' Deep-Dive Audit (Value: $197)", 
+        "The 'Infinite Traffic' Video Strategy (Value: $147)", 
+        "3x Live Q&A 'Tear-Down' Recordings (Value: $297)",
+        "Bonus: The 7-Day Launch Checklist (Value: $47)"
+      ],
       stripePriceId: "price_OTO_ID"
     },
-    // Added default downsell just in case
     downsell: {
-        headline: "Is $147 too much?",
-        description: "Get the DIY Checklist instead.",
-        price: 3700,
-        stripePriceId: "price_DOWNSELL_ID",
-        deliveryUrl: ""
+      // DOWNSELL: Empathy + Discount. Removes the "Service" aspect, sells the "Information".
+      headline: "Okay, I Get It. $147 Is A Stretch Right Now.",
+      description: "But I don't want you to fail because of technical errors. Get the **'DIY Inbox Defense Checklist'** (The exact PDF I use to audit clients) without the personal video review.",
+      price: 3700,
+      stripePriceId: "price_DOWNSELL_ID",
+      deliveryUrl: ""
     }
   }
 };
