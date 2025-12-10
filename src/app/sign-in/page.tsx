@@ -1,4 +1,3 @@
-/* FILE: src/app/sign-in/page.tsx */
 import { SignIn } from "@clerk/nextjs";
 import Image from "next/image";
 
@@ -19,6 +18,7 @@ export default function SignInPage() {
           marginBottom: '30px'
       }}>
          <Image 
+            // The Correct Cloudinary URL
             src="https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Logo2_on0p1k.png"
             alt="Ready Set Focus Logo"
             width={200}
@@ -28,7 +28,6 @@ export default function SignInPage() {
          />
       </div>
 
-      {/* 2. THE NEW "AMAZING" HEADLINE */}
       <div style={{ textAlign: 'center', marginBottom: '30px', padding: '0 20px' }}>
         <h1 style={{ 
             fontSize: '28px', 
@@ -44,7 +43,6 @@ export default function SignInPage() {
         </p>
       </div>
 
-      {/* 3. CENTERED CLERK CARD */}
       <div style={{display: 'flex', justifyContent: 'center', alignItems: 'center', paddingBottom: '60px'}}>
         <SignIn 
             path="/sign-in"
@@ -58,10 +56,8 @@ export default function SignInPage() {
                     spacingUnit: '1.1rem',
                 },
                 elements: {
-                    // FIX: Moved these from 'layout' to 'elements'
                     headerTitle: 'hidden',
                     headerSubtitle: 'hidden',
-                    
                     card: { 
                         boxShadow: '0 20px 40px -10px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0,0,0,0.05)', 
                         padding: '40px',
