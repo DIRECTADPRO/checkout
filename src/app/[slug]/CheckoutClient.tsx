@@ -110,7 +110,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  marginTop: '20px'
              }}>
                 <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
-                  Customer Information
+                  Where Should We Send Your Playbook?
                 </div>
 
                 <div style={{marginTop: '15px'}}>
