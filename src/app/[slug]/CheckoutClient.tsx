@@ -11,18 +11,19 @@ import '@/styles/checkout-design.css';
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
-  // CLEANED UP: Removed 'oto' to prevent confusion
   const { theme, checkout, bump } = product;
   
   const [amount, setAmount] = useState<number>(checkout.price);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  // STRICT LOGIC: Only look for a video on the Checkout component itself
-  // If you haven't added 'videoEmbedUrl' to the Checkout content type in Strapi yet,
-  // this will just be undefined and the code will default to the Image. Safe.
-  // @ts-ignore
+  // 1. VIDEO LOGIC: Check if a video URL exists
+  // @ts-ignore (Ignores TS error if field is missing in local types)
   const videoUrl = checkout.videoEmbedUrl;
   const hasVideo = videoUrl && videoUrl.length > 0;
+
+  // 2. FUNNEL LOGIC: Check which mode we are in (Digital vs Physical)
+  // @ts-ignore (Ignores TS error if field is missing in local types)
+  const funnelType = checkout.funnelType || 'digital_product';
 
   // Logic: Ensure price is accurate when page loads
   if (amount !== checkout.price && !isBumpSelected) {
@@ -127,6 +128,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                           isPriceUpdating={false}
                           productSlug={product.id}
                           isBumpSelected={isBumpSelected}
+                          // 3. PASS THE FUNNEL TYPE TO THE FORM
+                          funnelType={funnelType}
                       >
                           {OrderBumpComponent}
                       </CheckoutForm>
@@ -142,7 +145,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               </div>
               <div style={{marginTop: '20px'}}>
                  
-                 {/* 3. CONDITIONAL SWITCH: Video vs Image (Strict Mode) */}
+                 {/* VIDEO / IMAGE SWITCH */}
                  {hasVideo ? (
                     <div style={{
                         marginBottom: '20px', 

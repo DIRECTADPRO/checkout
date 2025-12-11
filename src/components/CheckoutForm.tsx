@@ -2,146 +2,157 @@
 'use client';
 
 import React, { useState } from 'react';
-import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import {
+  PaymentElement,
+  AddressElement,
+  useStripe,
+  useElements
+} from '@stripe/react-stripe-js';
 
-interface CheckoutFormProps {
-    amountInCents: number;
-    isPriceUpdating: boolean;
-    productSlug: string;
-    isBumpSelected: boolean;
-    children?: React.ReactNode; 
-}
+type CheckoutFormProps = {
+  amountInCents: number;
+  isPriceUpdating: boolean;
+  productSlug: string;
+  isBumpSelected: boolean;
+  children?: React.ReactNode;
+  funnelType?: string;
+};
 
-export default function CheckoutForm({ amountInCents, isPriceUpdating, productSlug, isBumpSelected, children }: CheckoutFormProps) {
+export default function CheckoutForm({
+  amountInCents,
+  isPriceUpdating,
+  productSlug,
+  isBumpSelected,
+  children,
+  funnelType = 'digital_product',
+}: CheckoutFormProps) {
   const stripe = useStripe();
   const elements = useElements();
+
+  const [email, setEmail] = useState('');
   const [message, setMessage] = useState<string | null>(null);
-  const [isProcessing, setIsProcessing] = useState<boolean>(false);
-  const [email, setEmail] = useState<string>('');
-  const [fullName, setFullName] = useState<string>('');
+  const [isLoading, setIsLoading] = useState(false);
 
-  const formattedAmount = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amountInCents / 100);
-
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!stripe || !elements) return;
-    
-    if (!email.includes('@') || !fullName.trim()) {
-      setMessage("Please fill in all fields."); return;
-    }
 
-    setIsProcessing(true); setMessage(null);
-
-    // 1. Validate Form (Client-side)
-    const { error: submitError } = await elements.submit();
-    if (submitError) {
-      setMessage(submitError.message || "Please check your payment details.");
-      setIsProcessing(false);
+    if (!stripe || !elements) {
       return;
     }
 
-    try {
-        // 2. Create Payment Intent (Server-side)
-        const res = await fetch('/api/manage-payment-intent', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                productSlug,
-                includeBump: isBumpSelected,
-                userEmail: email,
-                userName: fullName
-            })
-        });
+    setIsLoading(true);
 
-        if (!res.ok) {
-             const errorData = await res.json();
-             throw new Error(errorData.error || "Failed to initialize payment.");
-        }
-        
-        const { clientSecret } = await res.json();
-        
-        // 3. Confirm Payment (Stripe)
-        const currentPath = window.location.pathname; 
-        const cleanPath = currentPath.endsWith('/') ? currentPath.slice(0, -1) : currentPath;
+    const { error } = await stripe.confirmPayment({
+      elements,
+      confirmParams: {
+        return_url: `${window.location.origin}/dashboard`,
+        receipt_email: email,
+      },
+    });
 
-        const { error } = await stripe.confirmPayment({
-          elements,
-          clientSecret, 
-          confirmParams: {
-            return_url: `${window.location.origin}${cleanPath}/upsell`,
-            receipt_email: email,
-            payment_method_data: { billing_details: { name: fullName.trim(), email: email } }
-          },
-        });
-
-        if (error) setMessage(error.message || 'Payment failed.');
-        
-    } catch (err: any) {
-        setMessage(err.message || "An unexpected error occurred.");
+    if (error.type === 'card_error' || error.type === 'validation_error') {
+      setMessage(error.message || 'An unexpected error occurred.');
+    } else {
+      setMessage('An unexpected error occurred.');
     }
 
-    setIsProcessing(false);
+    setIsLoading(false);
   };
 
-  const isButtonDisabled = isProcessing || isPriceUpdating || !stripe || !elements;
-  let buttonText = isPriceUpdating ? 'Updating Total...' : `Get Instant Access - ${formattedAmount}`;
-  if (isProcessing) buttonText = 'Processing...';
+  // LOGIC: Which funnels require a shipping address?
+  const needsShipping = ['physical_product', 'free_plus_shipping', 'pre_order'].includes(funnelType);
 
   return (
-    <form id="checkoutForm" onSubmit={handleSubmit}>
-        
-        <div className="form-section">
-            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', fontSize: '18px', fontWeight: '800', letterSpacing: '-0.02em', color: '#111827', marginBottom: '16px' }}>
-                <span style={{color: '#6A45FF', marginRight: '10px', fontSize: '20px'}}>1.</span> Contact Information
-            </h3>
-            <div className="form-group" style={{marginBottom: '16px'}}>
-                <input type="text" placeholder="Full name" required value={fullName} onChange={(e) => setFullName(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '15px', color: '#111' }} />
-            </div>
-            <div className="form-group">
-                <input type="email" placeholder="Email address" required value={email} onChange={(e) => setEmail(e.target.value)} style={{ width: '100%', padding: '14px', borderRadius: '8px', border: '1px solid #D1D5DB', fontSize: '15px', color: '#111' }} />
-            </div>
+    <form id="payment-form" onSubmit={handleSubmit}>
+      {/* 1. EMAIL FIELD (Always Visible) */}
+      <div className="mb-6">
+        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+          Email Address
+        </label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="you@example.com"
+          required
+          className="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500"
+        />
+      </div>
+
+      {/* 2. CONDITIONAL SHIPPING ADDRESS */}
+      {/* Shows only if the funnel type is in the 'needsShipping' list defined above */}
+      {needsShipping && (
+        <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+           <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">
+             Shipping Information
+           </h3>
+           <AddressElement 
+              options={{
+                mode: 'shipping',
+                allowedCountries: ['US', 'CA', 'GB', 'AU'], // Add more countries here if needed
+              }} 
+           />
         </div>
+      )}
 
-        <div className="form-section">
-            <h3 className="section-title" style={{ display: 'flex', alignItems: 'center', fontSize: '18px', fontWeight: '800', letterSpacing: '-0.02em', color: '#111827', marginBottom: '16px' }}>
-                <span style={{color: '#6A45FF', marginRight: '10px', fontSize: '20px'}}>2.</span> Payment Details
-            </h3>
-            
-            {/* FIX: Moved layout options here. Disabling wallets removes "HTTPS" warnings */}
-            <PaymentElement 
-                id="payment-element" 
-                options={{ 
-                    layout: 'tabs',
-                    wallets: { applePay: 'never', googlePay: 'never' }
-                }} 
-            />
-            
-            <div style={{marginTop: '8px', display: 'flex', justifyContent: 'flex-start'}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11px', color: '#9CA3AF', fontWeight: '500'}}>
-                    <span>🔒</span> 256-bit SSL Secure
-                </div>
-            </div>
+      {/* 3. PAYMENT ELEMENT (Credit Card) */}
+      <div className="mb-6">
+        <label className="block text-sm font-medium text-gray-700 mb-1">
+          Payment Details
+        </label>
+        <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
+      </div>
+
+      {/* 4. BUMP OFFER (Injected from Parent) */}
+      {children}
+
+      {/* 5. DYNAMIC SUBMIT BUTTON */}
+      <button
+        disabled={isLoading || !stripe || !elements}
+        id="submit"
+        className="w-full bg-[#6A45FF] text-white font-bold py-4 px-6 rounded-lg hover:bg-[#5839db] transition-colors shadow-lg mt-6 text-lg relative overflow-hidden"
+      >
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+             <div className="spinner mr-2"></div> Processing...
+          </div>
+        ) : (
+          /* Dynamic Text Logic based on Funnel Type */
+          (() => {
+             const priceDisplay = `$${(amountInCents / 100).toFixed(2)}`;
+             switch(funnelType) {
+                case 'physical_product': 
+                    return `Ship My Order - ${priceDisplay}`;
+                case 'free_plus_shipping': 
+                    return `I'll Cover Shipping - ${priceDisplay}`;
+                case 'pre_order': 
+                    return `Reserve My Copy - ${priceDisplay}`;
+                case 'tripwire_offer': 
+                    return `Grab the Deal - ${priceDisplay}`;
+                case 'charity_donation':
+                    return `Donate Now - ${priceDisplay}`;
+                default: 
+                    return `Get Instant Access - ${priceDisplay}`;
+             }
+          })()
+        )}
+      </button>
+
+      {/* Error Messages */}
+      {message && (
+        <div id="payment-message" className="mt-4 text-center text-red-600 bg-red-50 p-3 rounded-md text-sm font-medium">
+          {message}
         </div>
-
-        {children}
-
-        {message && <div role="alert" style={{color: '#B91C1C', margin: '15px 0', border: '1px solid #fecaca', padding: '12px', borderRadius: '8px', background: '#fef2f2', textAlign: 'center', fontSize: '14px', fontWeight: '500'}}>{message}</div>}
-
-        <button type="submit" className="cta-button" id="submitButton" disabled={isButtonDisabled} 
-            style={{
-                width: '100%', backgroundColor: '#6A45FF', color: 'white', padding: '20px', borderRadius: '10px',
-                fontSize: '20px', fontWeight: '800', letterSpacing: '0.01em', border: 'none', cursor: isButtonDisabled ? 'not-allowed' : 'pointer',
-                opacity: isButtonDisabled ? 0.7 : 1, transition: 'all 0.2s', marginTop: '10px',
-                boxShadow: '0 4px 6px -1px rgba(106, 69, 255, 0.4), 0 2px 4px -1px rgba(106, 69, 255, 0.2)'
-            }}>
-             {buttonText}
-        </button>
-
-        <div style={{textAlign: 'center', marginTop: '16px'}}>
-            <p style={{fontWeight: '700', color: '#059669', marginBottom: '6px', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px'}}>
-                <span>✓</span> 30-Day Money-Back Guarantee
-            </p>
-        </div>
+      )}
+      
+      {/* Secure Badge */}
+      <div className="mt-4 text-center">
+         <p className="text-xs text-gray-400 flex items-center justify-center">
+           <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
+           256-Bit Bank Level Security
+         </p>
+      </div>
     </form>
   );
 }
