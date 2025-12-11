@@ -11,10 +11,18 @@ import '@/styles/checkout-design.css';
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
+  // CLEANED UP: Removed 'oto' to prevent confusion
   const { theme, checkout, bump } = product;
   
   const [amount, setAmount] = useState<number>(checkout.price);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
+
+  // STRICT LOGIC: Only look for a video on the Checkout component itself
+  // If you haven't added 'videoEmbedUrl' to the Checkout content type in Strapi yet,
+  // this will just be undefined and the code will default to the Image. Safe.
+  // @ts-ignore
+  const videoUrl = checkout.videoEmbedUrl;
+  const hasVideo = videoUrl && videoUrl.length > 0;
 
   // Logic: Ensure price is accurate when page loads
   if (amount !== checkout.price && !isBumpSelected) {
@@ -42,7 +50,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     currency: 'usd',
     appearance,
     paymentMethodTypes: ['card'],
-    // FIX: Added 'as const' to satisfy TypeScript strictness
     setupFutureUsage: 'off_session' as const, 
   };
 
@@ -134,7 +141,28 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 What You Get
               </div>
               <div style={{marginTop: '20px'}}>
-                 <img src={checkout.image} alt={checkout.productName} className="product-image-mockup" />
+                 
+                 {/* 3. CONDITIONAL SWITCH: Video vs Image (Strict Mode) */}
+                 {hasVideo ? (
+                    <div style={{
+                        marginBottom: '20px', 
+                        borderRadius: '8px', 
+                        overflow: 'hidden', 
+                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
+                        aspectRatio: '16/9',
+                        border: '1px solid #E5E7EB'
+                    }}>
+                        <iframe 
+                          src={videoUrl} 
+                          style={{width: '100%', height: '100%', border: 'none'}}
+                          allow="autoplay; encrypted-media"
+                          allowFullScreen
+                        />
+                    </div>
+                 ) : (
+                    <img src={checkout.image} alt={checkout.productName} className="product-image-mockup" />
+                 )}
+
                  <div style={{marginBottom: '20px'}}>
                     <h3 style={{fontSize: '18px', fontWeight: '700', marginBottom: '5px'}}>{checkout.productName}</h3>
                     <p style={{fontSize: '14px', color: '#6B7280'}}>Full Access Digital Package</p>
