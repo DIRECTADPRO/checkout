@@ -33,18 +33,20 @@ export default function CheckoutForm({
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // --- LOGIC: DEFINE VARIABLES HERE ---
-  const needsShipping = ['physical_product', 'free_plus_shipping', 'pre_order', 'tripwire_offer'].includes(funnelType);
-  const isFreeFunnel = ['newsletter_signup', 'lead_magnet', 'waitlist', 'application_funnel', 'webinar_live'].includes(funnelType);
+  // LOGIC FIX: Handle potential Strapi naming mismatch
+  // Some versions send 'physical_product', others might send 'Physical Product'
+  const typeSafe = funnelType?.toLowerCase().replace(' ', '_') || 'digital_product';
+
+  const needsShipping = ['physical_product', 'free_plus_shipping', 'pre_order', 'tripwire_offer'].includes(typeSafe);
+  const isFreeFunnel = ['newsletter_signup', 'lead_magnet', 'waitlist', 'application_funnel', 'webinar_live'].includes(typeSafe);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     if (isFreeFunnel) {
-        // Simulate Success for Free Funnels
         setTimeout(() => {
-            alert(`Success! Captured email: ${email} for ${funnelType}`);
+            alert(`Success! Captured email: ${email}`);
             setIsLoading(false);
         }, 1000);
         return;
@@ -71,6 +73,11 @@ export default function CheckoutForm({
   return (
     <form id="payment-form" onSubmit={handleSubmit}>
       
+      {/* DEBUGGER: REMOVE THIS AFTER TESTING */}
+      <p className="text-[10px] text-red-500 text-center mb-2 uppercase tracking-widest">
+        SYSTEM MODE: {typeSafe}
+      </p>
+
       {/* 1. EMAIL FIELD */}
       <div className="mb-6">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
@@ -97,7 +104,7 @@ export default function CheckoutForm({
         </div>
       )}
 
-      {/* 3. CREDIT CARD (Hidden if Free) */}
+      {/* 3. CREDIT CARD */}
       {!isFreeFunnel && (
         <div className="mb-6">
           <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -107,48 +114,38 @@ export default function CheckoutForm({
         </div>
       )}
 
-      {/* 4. BUMP OFFER (Hidden if Free) */}
       {!isFreeFunnel && children}
 
-      {/* 5. SMART BUTTON */}
+      {/* 5. BUTTON FIX: Added min-height and flex centering */}
       <button
         disabled={isLoading || (!isFreeFunnel && (!stripe || !elements))}
         id="submit"
-        className="w-full bg-[#6A45FF] text-white font-bold py-4 px-6 rounded-lg hover:bg-[#5839db] transition-colors shadow-lg mt-6 text-lg relative overflow-hidden"
+        className="w-full bg-[#6A45FF] text-white font-bold rounded-lg hover:bg-[#5839db] transition-colors shadow-lg mt-6 text-lg relative overflow-hidden flex items-center justify-center min-h-[64px] px-6 py-4"
       >
         {isLoading ? (
-          <div className="flex items-center justify-center">Processing...</div>
+          <span>Processing...</span>
         ) : (
-          (() => {
+          <span className="text-center w-full block">
+          {(() => {
              const priceDisplay = `$${(amountInCents / 100).toFixed(2)}`;
-             switch(funnelType) {
+             switch(typeSafe) {
                 case 'physical_product': return `Ship My Order - ${priceDisplay}`;
                 case 'free_plus_shipping': return `I'll Cover Shipping - ${priceDisplay}`;
                 case 'tripwire_offer': return `Grab the Deal - ${priceDisplay}`;
-                case 'charity_donation': return `Donate Now - ${priceDisplay}`;
-                case 'newsletter_signup': return "Subscribe Now (Free)";
-                case 'lead_magnet': return "Send Me The Guide";
-                case 'waitlist': return "Join The Waitlist";
-                case 'webinar_live': return "Register For Free";
-                case 'application_funnel': return "Submit Application";
+                case 'newsletter_signup': return "Subscribe Now";
                 default: return `Get Instant Access - ${priceDisplay}`;
              }
-          })()
+          })()}
+          </span>
         )}
       </button>
 
-      {/* Error Messages */}
       {message && <div className="mt-4 text-center text-red-600 bg-red-50 p-3 rounded-md">{message}</div>}
       
-      {/* Secure Badge - FIXED SIZE LOCK */}
       {!isFreeFunnel && (
         <div className="mt-4 text-center">
            <p className="text-xs text-gray-400 flex items-center justify-center">
-             <svg 
-               style={{ width: '12px', height: '12px', marginRight: '5px' }} 
-               fill="currentColor" 
-               viewBox="0 0 20 20"
-             >
+             <svg style={{ width: '12px', height: '12px', marginRight: '5px' }} fill="currentColor" viewBox="0 0 20 20">
                <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
              </svg>
              256-Bit Bank Level Security
