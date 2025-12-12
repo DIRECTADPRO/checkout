@@ -33,14 +33,24 @@ export default function CheckoutForm({
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  // --- LOGIC: DEFINE VARIABLES HERE ---
+  const needsShipping = ['physical_product', 'free_plus_shipping', 'pre_order', 'tripwire_offer'].includes(funnelType);
+  const isFreeFunnel = ['newsletter_signup', 'lead_magnet', 'waitlist', 'application_funnel', 'webinar_live'].includes(funnelType);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
-    if (!stripe || !elements) {
-      return;
+    if (isFreeFunnel) {
+        // Simulate Success for Free Funnels
+        setTimeout(() => {
+            alert(`Success! Captured email: ${email} for ${funnelType}`);
+            setIsLoading(false);
+        }, 1000);
+        return;
     }
 
-    setIsLoading(true);
+    if (!stripe || !elements) return;
 
     const { error } = await stripe.confirmPayment({
       elements,
@@ -55,16 +65,13 @@ export default function CheckoutForm({
     } else {
       setMessage('An unexpected error occurred.');
     }
-
     setIsLoading(false);
   };
 
-  // LOGIC: Which funnels require a shipping address?
-  const needsShipping = ['physical_product', 'free_plus_shipping', 'pre_order'].includes(funnelType);
-
   return (
     <form id="payment-form" onSubmit={handleSubmit}>
-      {/* 1. EMAIL FIELD (Always Visible) */}
+      
+      {/* 1. EMAIL FIELD */}
       <div className="mb-6">
         <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
           Email Address
@@ -80,79 +87,74 @@ export default function CheckoutForm({
         />
       </div>
 
-      {/* 2. CONDITIONAL SHIPPING ADDRESS */}
-      {/* Shows only if the funnel type is in the 'needsShipping' list defined above */}
+      {/* 2. SHIPPING ADDRESS (Conditional) */}
       {needsShipping && (
         <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
            <h3 className="text-sm font-bold text-gray-900 mb-3 uppercase tracking-wider">
              Shipping Information
            </h3>
-           <AddressElement 
-              options={{
-                mode: 'shipping',
-                allowedCountries: ['US', 'CA', 'GB', 'AU'], // Add more countries here if needed
-              }} 
-           />
+           <AddressElement options={{ mode: 'shipping', allowedCountries: ['US', 'CA', 'GB'] }} />
         </div>
       )}
 
-      {/* 3. PAYMENT ELEMENT (Credit Card) */}
-      <div className="mb-6">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          Payment Details
-        </label>
-        <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
-      </div>
+      {/* 3. CREDIT CARD (Hidden if Free) */}
+      {!isFreeFunnel && (
+        <div className="mb-6">
+          <label className="block text-sm font-medium text-gray-700 mb-1">
+            Payment Details
+          </label>
+          <PaymentElement id="payment-element" options={{ layout: "tabs" }} />
+        </div>
+      )}
 
-      {/* 4. BUMP OFFER (Injected from Parent) */}
-      {children}
+      {/* 4. BUMP OFFER (Hidden if Free) */}
+      {!isFreeFunnel && children}
 
-      {/* 5. DYNAMIC SUBMIT BUTTON */}
+      {/* 5. SMART BUTTON */}
       <button
-        disabled={isLoading || !stripe || !elements}
+        disabled={isLoading || (!isFreeFunnel && (!stripe || !elements))}
         id="submit"
         className="w-full bg-[#6A45FF] text-white font-bold py-4 px-6 rounded-lg hover:bg-[#5839db] transition-colors shadow-lg mt-6 text-lg relative overflow-hidden"
       >
         {isLoading ? (
-          <div className="flex items-center justify-center">
-             <div className="spinner mr-2"></div> Processing...
-          </div>
+          <div className="flex items-center justify-center">Processing...</div>
         ) : (
-          /* Dynamic Text Logic based on Funnel Type */
           (() => {
              const priceDisplay = `$${(amountInCents / 100).toFixed(2)}`;
              switch(funnelType) {
-                case 'physical_product': 
-                    return `Ship My Order - ${priceDisplay}`;
-                case 'free_plus_shipping': 
-                    return `I'll Cover Shipping - ${priceDisplay}`;
-                case 'pre_order': 
-                    return `Reserve My Copy - ${priceDisplay}`;
-                case 'tripwire_offer': 
-                    return `Grab the Deal - ${priceDisplay}`;
-                case 'charity_donation':
-                    return `Donate Now - ${priceDisplay}`;
-                default: 
-                    return `Get Instant Access - ${priceDisplay}`;
+                case 'physical_product': return `Ship My Order - ${priceDisplay}`;
+                case 'free_plus_shipping': return `I'll Cover Shipping - ${priceDisplay}`;
+                case 'tripwire_offer': return `Grab the Deal - ${priceDisplay}`;
+                case 'charity_donation': return `Donate Now - ${priceDisplay}`;
+                case 'newsletter_signup': return "Subscribe Now (Free)";
+                case 'lead_magnet': return "Send Me The Guide";
+                case 'waitlist': return "Join The Waitlist";
+                case 'webinar_live': return "Register For Free";
+                case 'application_funnel': return "Submit Application";
+                default: return `Get Instant Access - ${priceDisplay}`;
              }
           })()
         )}
       </button>
 
       {/* Error Messages */}
-      {message && (
-        <div id="payment-message" className="mt-4 text-center text-red-600 bg-red-50 p-3 rounded-md text-sm font-medium">
-          {message}
+      {message && <div className="mt-4 text-center text-red-600 bg-red-50 p-3 rounded-md">{message}</div>}
+      
+      {/* Secure Badge - FIXED SIZE LOCK */}
+      {!isFreeFunnel && (
+        <div className="mt-4 text-center">
+           <p className="text-xs text-gray-400 flex items-center justify-center">
+             <svg 
+               style={{ width: '12px', height: '12px', marginRight: '5px' }} 
+               fill="currentColor" 
+               viewBox="0 0 20 20"
+             >
+               <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path>
+             </svg>
+             256-Bit Bank Level Security
+           </p>
         </div>
       )}
-      
-      {/* Secure Badge */}
-      <div className="mt-4 text-center">
-         <p className="text-xs text-gray-400 flex items-center justify-center">
-           <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd"></path></svg>
-           256-Bit Bank Level Security
-         </p>
-      </div>
     </form>
   );
 }
