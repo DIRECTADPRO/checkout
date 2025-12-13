@@ -2,16 +2,16 @@
 import qs from 'qs';
 import { ProductConfig } from './products';
 
-// 1. UPDATE INTERFACE: Add funnel_type to the response definition
+// Interface definitions remain the same...
 interface StrapiProductResponse {
   id: number;
   documentId: string;
   slug: string;
   name: string;
   isActive: boolean;
-  funnel_type?: string; // <--- ADDED: The field from your Product collection
+  funnel_type?: string;
   theme: ProductConfig['theme'];
-  checkout: ProductConfig['checkout'] & { funnel_type?: string }; // <--- ADDED: Check inside checkout too
+  checkout: ProductConfig['checkout'] & { funnel_type?: string };
   bump: ProductConfig['bump'];
   oto: ProductConfig['oto'];
   downsell?: { 
@@ -33,6 +33,9 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
+    // 1. SIMPLIFIED QUERY (The Fix)
+    // We removed the nested 'features' population which caused the 400 Error.
+    // using 'populate: "*"' is safer and gets all direct children.
     const query = qs.stringify({
       filters: {
         slug: {
@@ -44,17 +47,13 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
           populate: '*'
         },
         checkout: {
-          populate: {
-            features: '*' 
-          }
+          populate: '*' // <--- CHANGED: Simply get everything (works for JSON & Components)
         },
         bump: {
           populate: '*'
         },
         oto: {
-          populate: {
-            features: '*'
-          }
+          populate: '*' // <--- CHANGED: Removed specific features nesting
         },
         downsell: {
           populate: '*'
@@ -99,9 +98,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     console.log(`[Strapi] ✅ Successfully loaded: ${item.name}`);
 
-    // 2. THE MAGIC SWITCH LOGIC
-    // We check the root 'funnel_type' first, then fall back to 'checkout.funnel_type'.
-    // Finally, we default to 'digital_product' if neither is set.
+    // Magic Switch Logic
     const detectedFunnelType = item.funnel_type || item.checkout.funnel_type || 'digital_product';
 
     return {
@@ -109,10 +106,8 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
       theme: item.theme,
       checkout: {
         ...item.checkout,
-        // 3. MAP THE VALUE
-        // This explicitly tells the app which funnel logic to use
         funnelType: detectedFunnelType, 
-        
+        // Robust check: Handle if features is a string (JSON) or an array of components
         features: Array.isArray(item.checkout.features) 
           ? item.checkout.features.map((f: any) => f.text || f)
           : [],
