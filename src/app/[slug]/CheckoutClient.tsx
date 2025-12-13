@@ -1,59 +1,69 @@
-/* FILE: src/app/[slug]/CheckoutClient.tsx */
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { loadStripe } from '@stripe/stripe-js';
+import React, { useState } from 'react';
+import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
-import CheckoutForm from '@/components/CheckoutForm';
+// ENSURE THIS IMPORT IS CORRECT. If this file doesn't exist, the code breaks.
+import CheckoutForm from '@/components/CheckoutForm'; 
 import { ProductConfig } from '@/lib/products';
+import { FUNNEL_BEHAVIORS, FunnelType } from '@/lib/funnel-types';
 import '@/styles/checkout-design.css';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
+function getFunnelConfig(type: string): typeof FUNNEL_BEHAVIORS['digital_product'] {
+  const validKey = (type in FUNNEL_BEHAVIORS ? type : 'digital_product') as FunnelType;
+  return FUNNEL_BEHAVIORS[validKey];
+}
+
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
-  
-  const [amount, setAmount] = useState<number>(checkout.price);
+
+  // 1. DATA PREP
+  const productData = checkout as any; 
+  const rawFunnelType = productData.funnelType || 'digital_product';
+  const config = getFunnelConfig(rawFunnelType);
+  const buttonCTA = productData.ctaText || config.defaultButtonText;
+
+  // Initialize amount (default to 0 if missing to prevent NaN errors)
+  const [amount, setAmount] = useState<number>(checkout.price || 0);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  // 1. VIDEO LOGIC: Check if a video URL exists
-  // @ts-ignore (Ignores TS error if field is missing in local types)
-  const videoUrl = checkout.videoEmbedUrl;
+  // 2. VIDEO CHECK
+  const videoUrl = productData.videoEmbedUrl;
   const hasVideo = videoUrl && videoUrl.length > 0;
 
-  // 2. FUNNEL LOGIC: Check which mode we are in (Digital vs Physical)
-  // @ts-ignore (Ignores TS error if field is missing in local types)
-  const funnelType = checkout.funnelType || 'digital_product';
-
-  // Logic: Ensure price is accurate when page loads
+  // 3. PRICE CORRECTION (Logic Check)
   if (amount !== checkout.price && !isBumpSelected) {
       if (amount === 499 && checkout.price === 700) {
           setAmount(700);
       }
   }
 
+  // 4. STRIPE CONFIGURATION
   const appearance = {
     theme: 'stripe' as const,
     variables: {
       colorPrimary: '#4F46E5', 
       colorBackground: '#F9FAFB', 
       colorText: '#111827',
-      colorDanger: '#df1b41',
-      fontFamily: 'Inter, system-ui, sans-serif',
-      spacingUnit: '4px',
       borderRadius: '6px',
     },
   };
 
-  const options = {
-    mode: 'payment' as const,
-    amount: amount, 
+  // FIX: Force amount to be a number. Stripe Subscriptions REQUIRE an amount 
+  // in client-mode (for the first invoice). If 0, it behaves like a setup intent.
+  const stripeMode = config.isSubscription ? 'subscription' : 'payment';
+  
+  const options: StripeElementsOptions = {
+    mode: stripeMode as any, // Cast to any to bypass strict union mismatch temporarily
+    amount: amount,          // Always pass amount
     currency: 'usd',
     appearance,
     paymentMethodTypes: ['card'],
-    setupFutureUsage: 'off_session' as const, 
   };
 
+  // 5. ORDER BUMP COMPONENT
   const OrderBumpComponent = (
     <div className="order-bump">
       <label className="order-bump-label" htmlFor="bump-offer">
@@ -67,9 +77,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           }}
         />
         <div className="order-bump-content" style={{marginLeft: '12px'}}>
-          <div className="order-bump-title">
-             {bump.headline}
-          </div>
+          <div className="order-bump-title">{bump.headline}</div>
           <div className="order-bump-description">
              <span className="order-bump-price-container" style={{display: 'block', marginBottom: '4px'}}>
                <span style={{color: '#15803D', fontWeight: 'bold'}}>One-Time Offer (${(bump.price / 100).toFixed(2)}):</span>
@@ -82,16 +90,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
   );
 
   return (
-    <div 
-      style={{ 
-        '--color-primary-cta': '#4F46E5',
-        '--color-background': '#F3F4F6', 
-        '--color-text': '#111827',
-        background: 'radial-gradient(circle at 50% 0%, #ffffff 0%, #f3f4f6 80%, #e5e7eb 100%)'
-      } as React.CSSProperties}
-      className="min-h-screen font-sans text-gray-900"
-    >
+    <div className="min-h-screen font-sans text-gray-900 bg-gray-100">
       <div className="checkout-container">
+        {/* --- HEADER --- */}
         <div className="checkout-header" style={{textAlign: 'center', marginBottom: '50px'}}>
             {theme.logoUrl ? (
               <img src={theme.logoUrl} alt="Logo" className="logo" style={{margin: '0 auto 20px auto', maxWidth: '90px', display: 'block'}} />
@@ -107,18 +108,11 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         </div>
 
         <div className="checkout-grid">
+          {/* --- MAIN COLUMN --- */}
           <div className="checkout-main">
-             <div style={{ 
-                 position: 'relative',
-                 backgroundColor: 'white', 
-                 borderRadius: '16px', 
-                 padding: '32px', 
-                 boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', 
-                 border: '1px solid #E5E7EB',
-                 marginTop: '20px'
-             }}>
+             <div style={{ position: 'relative', backgroundColor: 'white', borderRadius: '16px', padding: '32px', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.05)', border: '1px solid #E5E7EB', marginTop: '20px' }}>
                 <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
-                  Where Should We Send Your Playbook?
+                   Where Should We Send Your {config.fulfillmentMode === 'physical' ? 'Package' : 'Access'}?
                 </div>
 
                 <div style={{marginTop: '15px'}}>
@@ -128,47 +122,31 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                           isPriceUpdating={false}
                           productSlug={product.id}
                           isBumpSelected={isBumpSelected}
-                          // 3. PASS THE FUNNEL TYPE TO THE FORM
-                          funnelType={funnelType}
+                          funnelConfig={config} 
+                          customButtonText={buttonCTA}
                       >
-                          {OrderBumpComponent}
+                          {config.showOrderBump && OrderBumpComponent}
                       </CheckoutForm>
                     </Elements>
                 </div>
              </div>
           </div>
-
+          
+          {/* --- SIDEBAR COLUMN --- */}
           <div className="checkout-sidebar">
             <div className="card relative" style={{marginTop: '20px'}}>
-              <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
-                What You Get
-              </div>
+              <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>What You Get</div>
               <div style={{marginTop: '20px'}}>
-                 
-                 {/* VIDEO / IMAGE SWITCH */}
                  {hasVideo ? (
-                    <div style={{
-                        marginBottom: '20px', 
-                        borderRadius: '8px', 
-                        overflow: 'hidden', 
-                        boxShadow: '0 4px 6px rgba(0,0,0,0.1)',
-                        aspectRatio: '16/9',
-                        border: '1px solid #E5E7EB'
-                    }}>
-                        <iframe 
-                          src={videoUrl} 
-                          style={{width: '100%', height: '100%', border: 'none'}}
-                          allow="autoplay; encrypted-media"
-                          allowFullScreen
-                        />
+                    <div style={{ marginBottom: '20px', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', aspectRatio: '16/9', border: '1px solid #E5E7EB' }}>
+                        <iframe src={videoUrl} style={{width: '100%', height: '100%', border: 'none'}} allow="autoplay; encrypted-media" allowFullScreen />
                     </div>
                  ) : (
                     <img src={checkout.image} alt={checkout.productName} className="product-image-mockup" />
                  )}
-
                  <div style={{marginBottom: '20px'}}>
                     <h3 style={{fontSize: '18px', fontWeight: '700', marginBottom: '5px'}}>{checkout.productName}</h3>
-                    <p style={{fontSize: '14px', color: '#6B7280'}}>Full Access Digital Package</p>
+                    <p style={{fontSize: '14px', color: '#6B7280'}}>Full Access Package</p>
                  </div>
                  <div style={{backgroundColor: '#F9FAFB', borderRadius: '8px', padding: '16px', marginBottom: '20px'}}>
                     <p style={{fontSize: '11px', fontWeight: '700', color: '#9CA3AF', textTransform: 'uppercase', marginBottom: '10px', letterSpacing: '0.05em'}}>What's Included:</p>
@@ -183,11 +161,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  </div>
               </div>
             </div>
-
+            
+            {/* ORDER SUMMARY */}
             <div className="card relative" style={{marginTop: '40px'}}>
-              <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>
-                Order Summary
-              </div>
+              <div className="card-header-pill" style={{backgroundColor: '#2E1065'}}>Order Summary</div>
               <div style={{marginTop: '20px'}}>
                  <div className="pricing-breakdown space-y-3">
                     <div className="summary-item">
@@ -196,7 +173,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     </div>
                     {isBumpSelected && (
                         <div className="summary-item">
-                            <span className="summary-item-title">Audit Video Upgrade</span>
+                            <span className="summary-item-title">{bump.headline}</span>
                             <span className="summary-item-price" style={{color: '#111827'}}>${(bump.price / 100).toFixed(2)}</span>
                         </div>
                     )}
@@ -206,17 +183,11 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                         <span style={{fontSize: '24px', fontWeight: '800', color: '#10B981'}}>${(amount / 100).toFixed(2)}</span>
                     </div>
                  </div>
-                 <div className="secure-text" style={{marginTop: '20px'}}>
-                    <span>🔒</span> 256-bit SSL Secure
-                 </div>
+                 <div className="secure-text" style={{marginTop: '20px'}}><span>🔒</span> 256-bit SSL Secure</div>
               </div>
             </div>
           </div>
         </div>
-
-        <footer className="checkout-footer" style={{marginTop: '60px', borderTop: '1px solid #E5E7EB', padding: '40px 0', textAlign: 'center'}}>
-            <p style={{color: '#9CA3AF', fontSize: '13px'}}>© {new Date().getFullYear()} Built For Speed LLC. All rights reserved.</p>
-        </footer>
       </div>
     </div>
   );
