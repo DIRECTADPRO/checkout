@@ -1,11 +1,6 @@
 /* FILE: src/app/globals.css */
 @import "tailwindcss";
 
-/* In Tailwind v4, standard theme variables are automatic.
-   You can add custom overrides here if needed, but the line above
-   is what initializes the engine.
-*/
-
 :root {
   --background: #ffffff;
   --foreground: #171717;
