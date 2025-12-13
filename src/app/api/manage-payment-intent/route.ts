@@ -1,15 +1,15 @@
-/* FILE: src/app/api/manage-payment-intent/route.ts */
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getProductFromStrapi } from "@/lib/strapi"; 
 import { getProduct as getStaticProduct } from '@/lib/products'; 
+import { getFunnelConfig } from "@/lib/funnel-types"; // IMPORT THE BRAIN
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is missing");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  apiVersion: "2025-11-17.clover", // Ensure this matches your version
+  apiVersion: "2024-11-20.acacia" as any, // Use your latest version
   typescript: true,
 });
 
@@ -24,16 +24,19 @@ export async function POST(req: NextRequest) {
     }
     if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
-    // 2. CALCULATE TOTAL
+    // 2. DETERMINE CONFIGURATION FROM TYPE
+    const funnelType = (product.checkout as any).funnelType || 'digital_product';
+    const config = getFunnelConfig(funnelType); // AUTOMATIC CONFIGURATION
+
+    // 3. CALCULATE TOTAL
     let totalAmount = product.checkout.price;
     if (includeBump) {
       totalAmount += product.bump.price;
     }
 
-    console.log(`[API] Processing: ${userEmail} | Total: $${totalAmount/100}`);
+    console.log(`[API] Processing: ${userEmail} | Type: ${funnelType} | Mode: ${config.fulfillmentMode}`);
 
-    // 3. GET OR CREATE STRIPE CUSTOMER (Critical for Upsells)
-    // We check if this email already has a customer ID
+    // 4. GET/CREATE CUSTOMER
     const customers = await stripe.customers.list({ email: userEmail, limit: 1 });
     let customerId = customers.data.length > 0 ? customers.data[0].id : null;
 
@@ -46,19 +49,24 @@ export async function POST(req: NextRequest) {
       customerId = newCustomer.id;
     }
 
-    // 4. CREATE INTENT WITH FUTURE USAGE
+    // 5. CREATE INTENT WITH DYNAMIC RULES
     const paymentIntent = await stripe.paymentIntents.create({
       amount: totalAmount,
       currency: "usd",
-      customer: customerId, // <--- Attach to Customer
-      setup_future_usage: 'off_session', // <--- Permission to charge again later
+      customer: customerId, 
+      setup_future_usage: 'off_session',
       receipt_email: userEmail,
       metadata: {
         product: product.checkout.productName,
         hasBump: includeBump ? "true" : "false",
-        customerName: userName,
-        product_slug: productSlug // Save slug for the upsell API to use
+        funnel_type: funnelType
       },
+      // AUTOMATIC SHIPPING ENFORCEMENT
+      ...(config.requiresShipping && {
+        shipping_address_collection: {
+          allowed_countries: ['US', 'CA', 'GB', 'AU'], 
+        },
+      }),
       payment_method_types: ["card"], 
     });
 

@@ -1,4 +1,3 @@
-/* FILE: src/components/CheckoutForm.tsx */
 'use client';
 
 import React, { useState } from 'react';
@@ -15,14 +14,13 @@ interface CheckoutFormProps {
   isPriceUpdating: boolean;
   productSlug: string;
   isBumpSelected: boolean;
-  funnelConfig: FunnelBehavior; // We now expect the FULL behavior object
-  customButtonText: string;     // The finalized button text from parent
-  children?: React.ReactNode;   // For the Order Bump
+  funnelConfig: FunnelBehavior;
+  customButtonText: string;
+  children?: React.ReactNode;
 }
 
 export default function CheckoutForm({ 
   amountInCents, 
-  isPriceUpdating, 
   productSlug, 
   isBumpSelected,
   funnelConfig,
@@ -32,23 +30,18 @@ export default function CheckoutForm({
   
   const stripe = useStripe();
   const elements = useElements();
-
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!stripe || !elements) {
-      return;
-    }
+    if (!stripe || !elements) return;
 
     setIsLoading(true);
 
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
-        // Make sure you have a success page set up
         return_url: `${window.location.origin}/success`,
       },
     });
@@ -63,82 +56,66 @@ export default function CheckoutForm({
   };
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit}>
+    <form id="payment-form" onSubmit={handleSubmit} className="space-y-6">
       
-      {/* 1. EMAIL FIELD (Standard) */}
-      <div style={{marginBottom: '20px'}}>
-        <label style={{display: 'block', fontSize: '14px', fontWeight: '500', color: '#374151', marginBottom: '6px'}}>
-          Email Address
-        </label>
-        {/* Stripe's Link Authentication Element automatically handles email */}
-        <div style={{display: 'none'}}> 
-            {/* Note: If you want to capture email explicitly outside Stripe, add an input here. 
-                Otherwise, PaymentElement handles it via "Link". 
-                For this example, we let PaymentElement handle it or assume you have a separate email handler.
-            */}
-        </div>
-      </div>
-
-      {/* 2. DYNAMIC SHIPPING ADDRESS */}
-      {/* Only renders if the funnel type REQUIRES it */}
+      {/* 1. SHIPPING (Dynamic) */}
       {funnelConfig.requiresShipping && (
-         <div style={{marginBottom: '20px'}}>
-             <h3 style={{fontSize: '16px', fontWeight: '600', marginBottom: '12px'}}>Shipping Information</h3>
+         <div className="animate-fade-in-down">
+             <h3 className="text-base font-semibold text-gray-900 mb-3">Shipping Information</h3>
              <AddressElement options={{ mode: 'shipping' }} />
          </div>
       )}
 
-      {/* 3. BILLING ADDRESS (If needed separately or different from Payment Default) */}
-      {/* PaymentElement usually handles Billing Zip. Use AddressElement mode='billing' only if you need full address for digital products */}
-      {funnelConfig.requiresBillingAddress && !funnelConfig.requiresShipping && (
-          <div style={{marginBottom: '20px'}}>
-             <AddressElement options={{ mode: 'billing' }} />
-          </div>
-      )}
-
-      {/* 4. PAYMENT ELEMENT */}
-      <div style={{marginBottom: '24px'}}>
+      {/* 2. PAYMENT */}
+      <div className="rounded-md">
         <PaymentElement id="payment-element" options={{layout: "tabs"}} />
       </div>
 
-      {/* 5. ORDER BUMP INJECTION */}
-      {/* The bump component is passed as 'children' from the parent */}
+      {/* 3. ORDER BUMP */}
       {children}
 
-      {/* 6. SUBMIT BUTTON */}
+      {/* 4. CONVERSION MASTERPIECE BUTTON */}
       <button 
         disabled={isLoading || !stripe || !elements} 
         id="submit"
-        style={{
-            width: '100%',
-            backgroundColor: '#4F46E5',
-            color: 'white',
-            padding: '16px',
-            borderRadius: '8px',
-            fontWeight: 'bold',
-            fontSize: '18px',
-            border: 'none',
-            cursor: (isLoading || !stripe) ? 'not-allowed' : 'pointer',
-            opacity: (isLoading || !stripe) ? 0.7 : 1,
-            marginTop: '24px',
-            boxShadow: '0 4px 6px rgba(79, 70, 229, 0.3)',
-            transition: 'all 0.2s ease'
-        }}
+        className={`
+            w-full group relative flex justify-center items-center
+            py-4 px-6 border border-transparent 
+            text-lg font-bold rounded-lg text-white 
+            bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500
+            shadow-lg hover:shadow-xl hover:-translate-y-0.5 
+            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500
+            transition-all duration-200 ease-in-out
+            disabled:opacity-70 disabled:cursor-not-allowed
+        `}
       >
-        <span id="button-text">
+        <span className="flex items-center gap-2">
           {isLoading ? (
-            <div className="spinner" id="spinner">Processing...</div>
+            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
           ) : (
-            // DYNAMIC BUTTON TEXT
-            customButtonText
+            <>
+              {/* Optional Lock Icon for Trust */}
+              <svg className="w-5 h-5 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              {customButtonText}
+            </>
           )}
         </span>
       </button>
 
-      {/* ERROR MESSAGES */}
+      {/* ERROR MESSAGE */}
       {message && (
-        <div id="payment-message" style={{color: '#df1b41', marginTop: '12px', textAlign: 'center', fontSize: '14px'}}>
-            {message}
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r shadow-sm">
+            <div className="flex">
+                <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
+                </div>
+                <div className="ml-3">
+                    <p className="text-sm text-red-700">{message}</p>
+                </div>
+            </div>
         </div>
       )}
     </form>

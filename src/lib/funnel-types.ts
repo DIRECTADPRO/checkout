@@ -1,4 +1,4 @@
-/* FILE: src/lib/funnel-types.ts */
+// src/lib/funnel-types.ts
 
 export type FunnelType = 
   | 'digital_product'
@@ -35,7 +35,6 @@ export interface FunnelBehavior {
   isSubscription: boolean;
 }
 
-// A standard default to keep the map clean for generic types
 const DEFAULT_DIGITAL: FunnelBehavior = {
   requiresShipping: false,
   requiresBillingAddress: false,
@@ -45,36 +44,64 @@ const DEFAULT_DIGITAL: FunnelBehavior = {
   isSubscription: false,
 };
 
+const DEFAULT_PHYSICAL: FunnelBehavior = {
+  requiresShipping: true,
+  requiresBillingAddress: true,
+  defaultButtonText: "Ship My Order",
+  showOrderBump: true,
+  fulfillmentMode: 'physical',
+  isSubscription: false,
+};
+
+const DEFAULT_SERVICE: FunnelBehavior = {
+  requiresShipping: false,
+  requiresBillingAddress: true,
+  defaultButtonText: "Book Now",
+  showOrderBump: false,
+  fulfillmentMode: 'service',
+  isSubscription: false,
+};
+
+// THE SINGLE SOURCE OF TRUTH
 export const FUNNEL_BEHAVIORS: Record<FunnelType, FunnelBehavior> = {
-  // --- CORE COMMERCE ---
-  digital_product: DEFAULT_DIGITAL,
-  physical_product: { ...DEFAULT_DIGITAL, requiresShipping: true, requiresBillingAddress: true, defaultButtonText: "Ship My Order", fulfillmentMode: 'physical' },
-  free_plus_shipping: { ...DEFAULT_DIGITAL, requiresShipping: true, requiresBillingAddress: true, defaultButtonText: "I'll Cover Shipping", fulfillmentMode: 'physical' },
-  tripwire_offer: { ...DEFAULT_DIGITAL, defaultButtonText: "Grab This Deal" },
-  pre_order: { ...DEFAULT_DIGITAL, requiresShipping: true, requiresBillingAddress: true, defaultButtonText: "Reserve My Copy", fulfillmentMode: 'physical' },
+  // --- PHYSICAL COMMERCE ---
+  physical_product:   DEFAULT_PHYSICAL,
+  free_plus_shipping: { ...DEFAULT_PHYSICAL, defaultButtonText: "I'll Cover Shipping" },
+  pre_order:          { ...DEFAULT_PHYSICAL, defaultButtonText: "Reserve My Copy" },
+  
+  // --- DIGITAL COMMERCE ---
+  digital_product:    DEFAULT_DIGITAL,
+  tripwire_offer:     { ...DEFAULT_DIGITAL, defaultButtonText: "Grab This Deal" },
+  event_ticket:       { ...DEFAULT_DIGITAL, defaultButtonText: "Get Tickets" },
+  charity_donation:   { ...DEFAULT_DIGITAL, defaultButtonText: "Donate Now" },
   
   // --- SUBSCRIPTIONS ---
-  membership_sub: { ...DEFAULT_DIGITAL, isSubscription: true, defaultButtonText: "Start My Trial" },
-  saas_trial: { ...DEFAULT_DIGITAL, isSubscription: true, defaultButtonText: "Start Free Trial" },
-  newsletter_signup: { ...DEFAULT_DIGITAL, showOrderBump: false, defaultButtonText: "Subscribe Now" },
+  membership_sub:     { ...DEFAULT_DIGITAL, isSubscription: true, defaultButtonText: "Start Membership" },
+  saas_trial:         { ...DEFAULT_DIGITAL, isSubscription: true, defaultButtonText: "Start Free Trial" },
+  consulting_retainer:{ ...DEFAULT_SERVICE, isSubscription: true, defaultButtonText: "Activate Retainer" },
   
-  // --- EVENTS & SERVICES ---
-  event_ticket: { ...DEFAULT_DIGITAL, defaultButtonText: "Get Tickets" },
-  consulting_retainer: { ...DEFAULT_DIGITAL, isSubscription: true, defaultButtonText: "Hire Now", fulfillmentMode: 'service' },
-  high_ticket_call: { ...DEFAULT_DIGITAL, defaultButtonText: "Book Your Call", fulfillmentMode: 'service' },
-  calendar_booking: { ...DEFAULT_DIGITAL, defaultButtonText: "Confirm Time", fulfillmentMode: 'service' },
+  // --- LEAD GEN & CONTENT (Usually Free or Low Barrier) ---
+  newsletter_signup:  { ...DEFAULT_DIGITAL, showOrderBump: false, defaultButtonText: "Subscribe" },
+  lead_magnet:        { ...DEFAULT_DIGITAL, showOrderBump: false, defaultButtonText: "Download Now" },
+  waitlist:           { ...DEFAULT_DIGITAL, showOrderBump: false, defaultButtonText: "Join Waitlist" },
+  quiz_funnel:        { ...DEFAULT_DIGITAL, showOrderBump: false, defaultButtonText: "See Results" },
+  survey_feedback:    { ...DEFAULT_DIGITAL, showOrderBump: false, defaultButtonText: "Submit Feedback" },
   
-  // --- LEAD GEN & OTHERS ---
-  lead_magnet: { ...DEFAULT_DIGITAL, defaultButtonText: "Download Now", showOrderBump: false },
-  waitlist: { ...DEFAULT_DIGITAL, defaultButtonText: "Join Waitlist", showOrderBump: false },
-  quiz_funnel: { ...DEFAULT_DIGITAL, defaultButtonText: "See Results", showOrderBump: false },
-  survey_feedback: { ...DEFAULT_DIGITAL, defaultButtonText: "Submit Feedback", showOrderBump: false },
-  challenge_funnel: { ...DEFAULT_DIGITAL, defaultButtonText: "Join The Challenge" },
-  application_funnel: { ...DEFAULT_DIGITAL, defaultButtonText: "Submit Application", showOrderBump: false },
+  // --- HIGH TOUCH / APPLICATION ---
+  high_ticket_call:   { ...DEFAULT_SERVICE, defaultButtonText: "Book Your Call" },
+  application_funnel: { ...DEFAULT_SERVICE, defaultButtonText: "Submit Application" },
+  calendar_booking:   { ...DEFAULT_SERVICE, defaultButtonText: "Confirm Appointment" },
+  
+  // --- EVENTS & LAUNCHES ---
+  challenge_funnel:   { ...DEFAULT_DIGITAL, defaultButtonText: "Join The Challenge" },
   video_sales_letter: { ...DEFAULT_DIGITAL, defaultButtonText: "Get Access Now" },
-  webinar_live: { ...DEFAULT_DIGITAL, defaultButtonText: "Register for Live Class" },
-  webinar_replay: { ...DEFAULT_DIGITAL, defaultButtonText: "Watch Replay" },
-  product_launch: { ...DEFAULT_DIGITAL, defaultButtonText: "Get Early Access" },
-  affiliate_bridge: { ...DEFAULT_DIGITAL, defaultButtonText: "Continue..." },
-  charity_donation: { ...DEFAULT_DIGITAL, defaultButtonText: "Donate Now" },
+  webinar_live:       { ...DEFAULT_DIGITAL, defaultButtonText: "Register for Live Class" },
+  webinar_replay:     { ...DEFAULT_DIGITAL, defaultButtonText: "Watch Replay" },
+  product_launch:     { ...DEFAULT_DIGITAL, defaultButtonText: "Get Early Access" }, // Often digital, change to physical if you ship launch kits
+  affiliate_bridge:   { ...DEFAULT_DIGITAL, defaultButtonText: "Continue..." },
 };
+
+export function getFunnelConfig(type: string): FunnelBehavior {
+  const validKey = (type in FUNNEL_BEHAVIORS ? type : 'digital_product') as FunnelType;
+  return FUNNEL_BEHAVIORS[validKey];
+}

@@ -14,15 +14,22 @@ async function getProductData(slug: string) {
   const strapiProduct = await getProductFromStrapi(slug);
   
   if (strapiProduct) {
+    // 2. SUCCESS LOGS (The "Magic Switch" Confirmation)
+    // We explicitly log the funnel mode so you can verify it in your terminal
+    const activeMode = strapiProduct.checkout.funnelType || 'digital_product (default)';
+    
     console.log(`✅ SUCCESS: Using Strapi Data.`);
-    console.log(`💰 Live Price: $${strapiProduct.checkout.price / 100}`); // Debug Log
+    console.log(`🔀 Active Funnel Mode: [ ${activeMode} ]`); // <--- NEW DEBUG LOG
+    console.log(`💰 Live Price: $${strapiProduct.checkout.price / 100}`); 
+    
     return strapiProduct;
   }
 
-  // 2. Fallback to Static File (Safety Net)
+  // 3. Fallback to Static File (Safety Net)
   console.log(`⚠️ Strapi failed or returned null. Using Static Fallback.`);
   const staticProduct = getStaticProduct(slug);
-  console.log(`🔒 Static Price: $${staticProduct.checkout.price / 100}`); // Debug Log
+  
+  console.log(`🔒 Static Price: $${staticProduct.checkout.price / 100}`);
   return staticProduct;
 }
 

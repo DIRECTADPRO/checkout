@@ -2,15 +2,16 @@
 import qs from 'qs';
 import { ProductConfig } from './products';
 
-// Define Interface for Strapi v5 Response (Flat Structure)
+// 1. UPDATE INTERFACE: Add funnel_type to the response definition
 interface StrapiProductResponse {
   id: number;
   documentId: string;
   slug: string;
   name: string;
   isActive: boolean;
+  funnel_type?: string; // <--- ADDED: The field from your Product collection
   theme: ProductConfig['theme'];
-  checkout: ProductConfig['checkout'];
+  checkout: ProductConfig['checkout'] & { funnel_type?: string }; // <--- ADDED: Check inside checkout too
   bump: ProductConfig['bump'];
   oto: ProductConfig['oto'];
   downsell?: { 
@@ -26,15 +27,12 @@ const STRAPI_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://137.184.188.99'
 const STRAPI_TOKEN = process.env.STRAPI_API_TOKEN;
 
 export async function getProductFromStrapi(slug: string): Promise<ProductConfig | null> {
-  // 1. Safety Check: Ensure Token Exists
   if (!STRAPI_TOKEN) {
     console.error("CRITICAL: STRAPI_API_TOKEN is missing in .env.local");
     return null;
   }
 
   try {
-    // 2. Construct the Query using 'qs'
-    // This asks Strapi to find the product by slug AND unpack every component
     const query = qs.stringify({
       filters: {
         slug: {
@@ -47,7 +45,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
         },
         checkout: {
           populate: {
-            features: '*' // Get the bullets
+            features: '*' 
           }
         },
         bump: {
@@ -59,18 +57,16 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
           }
         },
         downsell: {
-          populate: '*' // <--- CRITICAL: Fetch the Downsell data
+          populate: '*'
         }
       },
     }, {
-      encodeValuesOnly: true, // Prettifies the URL
+      encodeValuesOnly: true,
     });
 
-    // 3. Set a Timeout (Don't hang forever if server is slow)
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 15000); // 15s Timeout
+    const timeoutId = setTimeout(() => controller.abort(), 15000); 
 
-    // 4. Fetch Data
     const url = `${STRAPI_URL}/api/products?${query}`;
     console.log(`[Strapi] Fetching: ${url}`);
 
@@ -79,13 +75,12 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
         Authorization: `Bearer ${STRAPI_TOKEN}`,
         'Content-Type': 'application/json',
       },
-      cache: 'no-store', // Always get fresh price data
+      cache: 'no-store', 
       signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
-    // 5. Handle Errors
     if (!res.ok) {
       const errorText = await res.text();
       console.error(`Strapi Error (${res.status}): ${res.statusText}`);
@@ -95,7 +90,6 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     const json = await res.json();
     
-    // 6. Validate Data
     if (!json.data || json.data.length === 0) {
       console.warn(`Product not found in Strapi for slug: ${slug}`);
       return null;
@@ -105,13 +99,20 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     console.log(`[Strapi] ✅ Successfully loaded: ${item.name}`);
 
-    // 7. Map Data (Flat Structure for Strapi v5)
+    // 2. THE MAGIC SWITCH LOGIC
+    // We check the root 'funnel_type' first, then fall back to 'checkout.funnel_type'.
+    // Finally, we default to 'digital_product' if neither is set.
+    const detectedFunnelType = item.funnel_type || item.checkout.funnel_type || 'digital_product';
+
     return {
       id: item.slug,
       theme: item.theme,
       checkout: {
         ...item.checkout,
-        // Safely map features array to strings
+        // 3. MAP THE VALUE
+        // This explicitly tells the app which funnel logic to use
+        funnelType: detectedFunnelType, 
+        
         features: Array.isArray(item.checkout.features) 
           ? item.checkout.features.map((f: any) => f.text || f)
           : [],
@@ -123,7 +124,6 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
           ? item.oto.features.map((f: any) => f.text || f)
           : [],
       },
-      // Map the optional Downsell component
       downsell: item.downsell
     };
 

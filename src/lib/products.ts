@@ -1,5 +1,8 @@
 /* FILE: src/lib/products.ts */
 
+// OPTIONAL: You can import FunnelType to be strict, or just use string.
+// import { FunnelType } from './funnel-types'; 
+
 export interface ProductConfig {
   id: string;
   theme: {
@@ -17,6 +20,12 @@ export interface ProductConfig {
     image: string;
     features: string[];
     stripePriceId: string;
+    
+    // --- NEW FIELDS ADDED TO FIX TYPESCRIPT ERRORS ---
+    funnelType?: string;      // The Magic Switch
+    ctaText?: string;         // Custom Button Text
+    videoEmbedUrl?: string;   // For Video Sales Letters
+    // -------------------------------------------------
   };
   bump: {
     headline: string;
@@ -33,7 +42,6 @@ export interface ProductConfig {
     features: string[];
     stripePriceId: string;
   };
-  // NEW: Added Downsell Interface
   downsell?: { 
     headline: string;
     description: string;
@@ -48,7 +56,6 @@ export const products: Record<string, ProductConfig> = {
   "email-bundle": {
     id: "email-bundle",
     theme: {
-      // Green = "Go/Money", Purple = "Royalty/Value". Perfect for high-converting funnels.
       primaryColor: "#059669", 
       accentColor: "#6A45FF",  
       backgroundColor: "#F9FAFB",
@@ -56,7 +63,6 @@ export const products: Record<string, ProductConfig> = {
       logoWidth: "150px"
     },
     checkout: {
-      // HEADLINE: Specific outcome + Timeframe + Objection handling
       headline: "Steal The Exact '5-Day Welcome Sequence' That Generated $1.3M In Sales (Without Being Pushy)",
       subhead: "Stop staring at a blinking cursor. Copy-paste these proven templates to turn new subscribers into raving fans and lifetime customers on autopilot.",
       productName: "The 'Next Best Message' Playbook",
@@ -67,19 +73,19 @@ export const products: Record<string, ProductConfig> = {
         "10x Plug-and-Play Email Templates (Value: $47)", 
         "The 'Ghost-Buster' Re-engagement Script (Value: $47)"
       ],
-      stripePriceId: "price_CORE_ID" 
+      stripePriceId: "price_CORE_ID",
+      
+      // EXPLICITLY DEFINING THE FUNNEL TYPE HERE
+      funnelType: 'digital_product', 
     },
     bump: {
-      // BUMP: Solves the immediate next problem (Getting them to open it)
       headline: "Wait! Want 80% Higher Open Rates?",
       description: "Add the **'Click-Magnet' Subject Line Vault**. 500+ fill-in-the-blank headlines proven to get your emails opened. (One-time offer: $17)",
       price: 1700,
       stripePriceId: "price_BUMP_ID"
     },
     oto: {
-      // OTO: High-Ticket Promise. Moves from "Writing" to "Technical Security & Traffic"
       headline: "Wait! Let Me Personally Audit Your Setup To Ensure You Never Land In The Spam Folder.",
-      // Ideally, this video sells the "Audit" and the "Traffic"
       videoEmbedUrl: "https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1", 
       videoPlaceholder: "WATCH: How I Scale to 10k Subs",
       price: 14700,
@@ -93,7 +99,6 @@ export const products: Record<string, ProductConfig> = {
       stripePriceId: "price_OTO_ID"
     },
     downsell: {
-      // DOWNSELL: Empathy + Discount. Removes the "Service" aspect, sells the "Information".
       headline: "Okay, I Get It. $147 Is A Stretch Right Now.",
       description: "But I don't want you to fail because of technical errors. Get the **'DIY Inbox Defense Checklist'** (The exact PDF I use to audit clients) without the personal video review.",
       price: 3700,
