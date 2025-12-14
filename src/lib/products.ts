@@ -76,7 +76,7 @@ export const products: Record<string, ProductConfig> = {
       stripePriceId: "price_CORE_ID",
       
       // EXPLICITLY DEFINING THE FUNNEL TYPE HERE
-      funnelType: 'digital_product', 
+      funnelType: 'free_plus_shipping', 
     },
     bump: {
       headline: "Wait! Want 80% Higher Open Rates?",
