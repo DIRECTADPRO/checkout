@@ -1,41 +1,77 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
-import { getFunnelConfig } from '@/lib/funnel-types'; // IMPORT THE BRAIN
-import '@/styles/checkout-design.css';
+import { getFunnelConfig } from '@/lib/funnel-types';
+import '@/styles/checkout-design.css'; // <--- Ensures Purple Headers & Seal
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+
+// --- SOCIAL PROOF POPUP COMPONENT ---
+const SocialProofPopup = () => {
+  const [visible, setVisible] = useState(false);
+  const [info, setInfo] = useState({ name: "Sarah", location: "Austin, TX", time: "2 minutes ago" });
+
+  useEffect(() => {
+    const names = ["Sarah L.", "Mike T.", "Jessica R.", "David K.", "Emily W."];
+    const locations = ["Austin, TX", "New York, NY", "London, UK", "Toronto, CA", "Sydney, AU"];
+    const times = ["2 minutes ago", "Just now", "5 minutes ago", "1 minute ago"];
+
+    const cycle = () => {
+      setInfo({
+        name: names[Math.floor(Math.random() * names.length)],
+        location: locations[Math.floor(Math.random() * locations.length)],
+        time: times[Math.floor(Math.random() * times.length)]
+      });
+      setVisible(true);
+      setTimeout(() => setVisible(false), 5000); // Hide after 5s
+    };
+
+    const timer = setInterval(cycle, 12000); // Show every 12s
+    setTimeout(cycle, 3000); // Show first one after 3s
+
+    return () => clearInterval(timer);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <div className="fixed bottom-4 left-4 z-50 bg-white border-l-4 border-green-500 shadow-xl rounded-r-lg p-4 flex items-center gap-3 animate-fade-in-up" style={{maxWidth: '300px'}}>
+      <div className="bg-green-100 p-2 rounded-full text-green-600">
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+      </div>
+      <div>
+        <p className="text-sm font-bold text-gray-800">{info.name} in {info.location}</p>
+        <p className="text-xs text-gray-500">Verified Purchase • {info.time}</p>
+      </div>
+    </div>
+  );
+};
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
 
-  // 1. AUTOMATIC CONFIGURATION
   const productData = checkout as any;
   const rawFunnelType = productData.funnelType || 'digital_product';
-  const config = getFunnelConfig(rawFunnelType); // <--- HERE IS THE MAGIC
+  const config = getFunnelConfig(rawFunnelType); 
   
-  // Allow override from product, otherwise use the Funnel Default
   const buttonCTA = productData.ctaText || config.defaultButtonText;
 
   const [amount, setAmount] = useState<number>(checkout.price || 0);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  // Video Logic
   const videoUrl = productData.videoEmbedUrl;
   const hasVideo = videoUrl && videoUrl.length > 0;
 
-  // Price Logic (Fixes the 499/700 issue)
   if (amount !== checkout.price && !isBumpSelected) {
       if (amount === 499 && checkout.price === 700) {
           setAmount(700);
       }
   }
 
-  // 2. STRIPE CONFIGURATION
   const appearance = {
     theme: 'stripe' as const,
     variables: {
@@ -82,8 +118,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
   return (
     <div className="min-h-screen font-sans text-gray-900 bg-gray-50">
+      {/* SOCIAL PROOF POPUP */}
+      <SocialProofPopup />
+
       <div className="checkout-container">
-        {/* HEADER */}
         <div className="checkout-header" style={{textAlign: 'center', marginBottom: '50px'}}>
             {theme.logoUrl ? (
               <img src={theme.logoUrl} alt="Logo" className="logo" style={{margin: '0 auto 20px auto', maxWidth: '120px', display: 'block'}} />
@@ -99,11 +137,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         </div>
 
         <div className="checkout-grid">
-          {/* MAIN CHECKOUT AREA */}
           <div className="checkout-main">
              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 mt-6">
                 <div className="inline-block bg-indigo-900 text-white px-4 py-1 rounded-full text-sm font-semibold uppercase tracking-wide mb-6">
-                   {/* DYNAMIC HEADER */}
                    {config.requiresShipping ? 'Where Should We Ship It?' : 'Complete Your Order'}
                 </div>
 
@@ -111,6 +147,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     <Elements options={options} stripe={stripePromise}>
                       <CheckoutForm 
                           amountInCents={amount} 
+                          // REMOVED 'isPriceUpdating' TO FIX BUILD ERROR
                           productSlug={product.id}
                           isBumpSelected={isBumpSelected}
                           funnelConfig={config} 
@@ -123,7 +160,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              </div>
           </div>
           
-          {/* SIDEBAR */}
           <div className="checkout-sidebar">
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden mt-6">
               <div className="bg-gray-900 text-white px-6 py-3 font-bold text-lg">What You Get</div>
