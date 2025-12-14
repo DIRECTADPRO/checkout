@@ -1,6 +1,8 @@
-@import "tailwindcss";
+/* FILE: src/app/globals.css */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-/* Optional: Keep your custom variables, but the line above is critical */
 :root {
   --background: #ffffff;
   --foreground: #171717;

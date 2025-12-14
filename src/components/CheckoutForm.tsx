@@ -80,7 +80,7 @@ export default function CheckoutForm({
             w-full group relative flex justify-center items-center
             py-4 px-6 rounded-lg text-white font-bold text-lg
             /* v4 CHANGE: 'bg-gradient-to-r' IS NOW 'bg-linear-to-r' */
-            bg-linear-to-r from-amber-500 to-orange-600 
+            bg-gradient-to-r from-amber-500 to-orange-600 
             hover:from-amber-400 hover:to-orange-500
             shadow-lg hover:shadow-xl hover:-translate-y-0.5 
             focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500
