@@ -1,4 +1,3 @@
-/* FILE: tailwind.config.ts */
 import type { Config } from "tailwindcss";
 
 const config: Config = {
@@ -13,6 +12,8 @@ const config: Config = {
         background: "var(--background)",
         foreground: "var(--foreground)",
       },
+      // You can add your custom colors here if needed
+      // primary: "..."
     },
   },
   plugins: [],

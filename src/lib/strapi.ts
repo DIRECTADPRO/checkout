@@ -2,16 +2,16 @@
 import qs from 'qs';
 import { ProductConfig } from './products';
 
-// Interface definitions remain the same...
+// 1. UPDATE INTERFACE: Match the actual Strapi field name (funnelType)
 interface StrapiProductResponse {
   id: number;
   documentId: string;
   slug: string;
   name: string;
   isActive: boolean;
-  funnel_type?: string;
+  funnelType?: string; // <--- CHANGED from funnel_type
   theme: ProductConfig['theme'];
-  checkout: ProductConfig['checkout'] & { funnel_type?: string };
+  checkout: ProductConfig['checkout'] & { funnelType?: string }; // <--- CHANGED
   bump: ProductConfig['bump'];
   oto: ProductConfig['oto'];
   downsell?: { 
@@ -33,9 +33,7 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
   }
 
   try {
-    // 1. SIMPLIFIED QUERY (The Fix)
-    // We removed the nested 'features' population which caused the 400 Error.
-    // using 'populate: "*"' is safer and gets all direct children.
+    // 2. SIMPLIFIED QUERY
     const query = qs.stringify({
       filters: {
         slug: {
@@ -47,13 +45,13 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
           populate: '*'
         },
         checkout: {
-          populate: '*' // <--- CHANGED: Simply get everything (works for JSON & Components)
+          populate: '*' 
         },
         bump: {
           populate: '*'
         },
         oto: {
-          populate: '*' // <--- CHANGED: Removed specific features nesting
+          populate: '*' 
         },
         downsell: {
           populate: '*'
@@ -98,16 +96,17 @@ export async function getProductFromStrapi(slug: string): Promise<ProductConfig 
 
     console.log(`[Strapi] ✅ Successfully loaded: ${item.name}`);
 
-    // Magic Switch Logic
-    const detectedFunnelType = item.funnel_type || item.checkout.funnel_type || 'digital_product';
+    // 3. THE FIX: Look for 'funnelType' (camelCase)
+    const detectedFunnelType = item.funnelType || item.checkout.funnelType || 'digital_product';
 
     return {
       id: item.slug,
       theme: item.theme,
       checkout: {
         ...item.checkout,
+        // Map the correct value to the app's config
         funnelType: detectedFunnelType, 
-        // Robust check: Handle if features is a string (JSON) or an array of components
+        
         features: Array.isArray(item.checkout.features) 
           ? item.checkout.features.map((f: any) => f.text || f)
           : [],
