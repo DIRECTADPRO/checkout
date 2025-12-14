@@ -111,7 +111,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     <Elements options={options} stripe={stripePromise}>
                       <CheckoutForm 
                           amountInCents={amount} 
-                          isPriceUpdating={false}
                           productSlug={product.id}
                           isBumpSelected={isBumpSelected}
                           funnelConfig={config} 
