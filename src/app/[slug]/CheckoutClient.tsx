@@ -7,7 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products';
 import { getFunnelConfig } from '@/lib/funnel-types';
-import '@/styles/checkout-design.css'; // Ensures the layout works
+import '@/styles/checkout-design.css'; // <--- The Purple Design Import
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -42,7 +42,7 @@ const SocialProofPopup = () => {
       setTimeout(() => setVisible(false), 5000); 
     };
 
-    const timer = setInterval(cycle, 15000); // Less aggressive (every 15s)
+    const timer = setInterval(cycle, 15000); 
     setTimeout(cycle, 4000); 
 
     return () => clearInterval(timer);
@@ -65,25 +65,19 @@ const SocialProofPopup = () => {
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
-
   const productData = checkout as any;
   
-  // --- THE MASTER OVERRIDE ---
-  // We ignore the database and force 'free_plus_shipping' 
-  // so you always get the Purple Headers, Seal, and Address Fields.
+  // MASTER OVERRIDE: Forces Purple Headers & Shipping Layout
   const rawFunnelType = 'free_plus_shipping'; 
-  
   const config = getFunnelConfig(rawFunnelType); 
   
   const buttonCTA = productData.ctaText || config.defaultButtonText;
   const [amount, setAmount] = useState<number>(checkout.price || 0);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  // Video Logic
   const videoUrl = productData.videoEmbedUrl;
   const hasVideo = videoUrl && videoUrl.length > 0;
 
-  // Fix Price Logic
   if (amount !== checkout.price && !isBumpSelected) {
       if (amount === 499 && checkout.price === 700) { setAmount(700); }
   }
@@ -91,7 +85,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
   const appearance = {
     theme: 'stripe' as const,
     variables: {
-      colorPrimary: theme.accentColor || '#6366f1', // Use Theme Color
+      colorPrimary: theme.accentColor || '#6366f1', 
       colorBackground: '#ffffff', 
       colorText: '#1f2937',
       borderRadius: '8px',
@@ -104,8 +98,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     currency: 'usd',
     appearance,
   };
-
-  // --- COMPONENTS ---
 
   const OrderBumpComponent = (
     <div className="bg-yellow-50 border-2 border-dashed border-yellow-400 rounded-xl p-4 mt-6">
@@ -143,7 +135,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       <SocialProofPopup />
 
       <div className="max-w-6xl mx-auto px-4 pt-10">
-        
         {/* HEADER */}
         <div className="text-center mb-10">
             {theme.logoUrl ? (
@@ -160,7 +151,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
-          
           {/* MAIN CHECKOUT (LEFT) */}
           <div className="lg:col-span-8">
              <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
@@ -191,25 +181,22 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* 30 DAY GUARANTEE SEAL (Mobile/Desktop) */}
+             {/* 30 DAY GUARANTEE SEAL */}
              <div className="mt-8 flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                  <div className="flex-shrink-0">
-                    {/* Gold Seal SVG */}
                     <svg className="w-16 h-16 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954-1.582 1.605 3.192a1 1 0 01-.44 1.355l-2.006 1.102 2.006 1.103a1 1 0 01.44 1.354L14.954 16.67l-3.954-1.582V17a1 1 0 11-2 0v-1.912l-3.954 1.582-1.605-3.192a1 1 0 01.44-1.354l2.006-1.103-2.006-1.102a1 1 0 01-.44-1.355L6.046 4.323 10 5.905V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clipRule="evenodd"/></svg>
                  </div>
                  <div>
                     <h3 className="font-bold text-gray-900 text-lg">30-Day Money-Back Guarantee</h3>
-                    <p className="text-sm text-gray-600">If you don't love it, simply email us within 30 days for a full refund. No questions asked.</p>
+                    <p className="text-sm text-gray-600">If you don't love it, simply email us within 30 days for a full refund.</p>
                  </div>
              </div>
           </div>
           
           {/* SIDEBAR (RIGHT) */}
           <div className="lg:col-span-4 space-y-6">
-            
-            {/* WHAT YOU GET */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">What You Get</div> {/* PURPLE HEADER */}
+              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">What You Get</div>
               <div className="p-6">
                  {hasVideo ? (
                     <div className="mb-6 rounded-lg overflow-hidden shadow-md aspect-video border border-gray-200">
@@ -218,10 +205,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  ) : (
                     <img src={checkout.image} alt={checkout.productName} className="w-full rounded-lg mb-6 shadow-sm border border-gray-100" />
                  )}
-                 <div className="mb-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{checkout.productName}</h3>
-                    <p className="text-sm text-gray-500 font-medium">{config.fulfillmentMode === 'physical' ? 'Physical Package' : 'Instant Digital Access'}</p>
-                 </div>
+                 <h3 className="text-xl font-bold text-gray-900 mb-2">{checkout.productName}</h3>
                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
                     <ul className="space-y-3">
                       {checkout.features.map((feature, i) => (
@@ -237,7 +221,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             
             {/* ORDER SUMMARY */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">Order Summary</div> {/* PURPLE HEADER */}
+              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">Order Summary</div>
               <div className="p-6">
                  <div className="space-y-3">
                     <div className="flex justify-between text-sm text-gray-600">
@@ -246,7 +230,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     </div>
                     {isBumpSelected && (
                         <div className="flex justify-between text-sm text-green-700 font-medium">
-                            <span>{bump.headline} (Add-on)</span>
+                            <span>{bump.headline}</span>
                             <span>${(bump.price / 100).toFixed(2)}</span>
                         </div>
                     )}
@@ -257,7 +241,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     <div className="h-px bg-gray-200 my-2"></div>
                     <div className="flex justify-between text-xl font-extrabold text-gray-900">
                         <span>Total</span>
-                        <span className="text-[#6366f1]">${(amount / 100).toFixed(2)}</span> {/* REFINED SUBTOTAL */}
+                        <span className="text-[#6366f1]">${(amount / 100).toFixed(2)}</span>
                     </div>
                  </div>
               </div>
@@ -270,9 +254,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                   <details className="group">
                      <summary className="flex justify-between items-center font-medium cursor-pointer list-none text-sm text-gray-700">
                         <span>When will this arrive?</span>
-                        <span className="transition group-open:rotate-180">
-                           <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                        </span>
+                        <span className="transition group-open:rotate-180">▼</span>
                      </summary>
                      <p className="text-gray-600 text-xs mt-3 group-open:animate-fadeIn">
                         We ship within 24 hours. Domestic orders typically arrive in 3-5 business days.
@@ -281,9 +263,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                   <details className="group">
                      <summary className="flex justify-between items-center font-medium cursor-pointer list-none text-sm text-gray-700">
                         <span>Is there a refund policy?</span>
-                        <span className="transition group-open:rotate-180">
-                           <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
-                        </span>
+                        <span className="transition group-open:rotate-180">▼</span>
                      </summary>
                      <p className="text-gray-600 text-xs mt-3 group-open:animate-fadeIn">
                         Yes! We offer a no-questions-asked 30-day money-back guarantee.
@@ -291,7 +271,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                   </details>
                </div>
             </div>
-
           </div>
         </div>
       </div>
