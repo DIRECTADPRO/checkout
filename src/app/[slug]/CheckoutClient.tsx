@@ -5,19 +5,18 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
-import { ProductConfig } from '@/lib/products';
+// FIX 1: Point directly to the index file so it finds the folder correctly
+import { ProductConfig } from '@/lib/products/index'; 
 import { getFunnelConfig } from '@/lib/funnel-types';
-import '@/styles/checkout-design.css'; // Ensures the layout works
+import '@/styles/checkout-design.css';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-// --- REALISTIC US-ONLY SOCIAL PROOF ---
 const SocialProofPopup = () => {
   const [visible, setVisible] = useState(false);
   const [info, setInfo] = useState({ name: "Sarah", location: "Austin, TX", time: "2 minutes ago" });
 
   useEffect(() => {
-    // Mainland US Locations Only
     const recentSales = [
         { name: "Mike T.", loc: "Denver, CO" },
         { name: "Sarah L.", loc: "Austin, TX" },
@@ -42,7 +41,7 @@ const SocialProofPopup = () => {
       setTimeout(() => setVisible(false), 5000); 
     };
 
-    const timer = setInterval(cycle, 15000); // Less aggressive (every 15s)
+    const timer = setInterval(cycle, 15000);
     setTimeout(cycle, 4000); 
 
     return () => clearInterval(timer);
@@ -65,33 +64,29 @@ const SocialProofPopup = () => {
 
 export default function CheckoutClient({ product }: { product: ProductConfig }) {
   const { theme, checkout, bump } = product;
-
-  const productData = checkout as any;
+  const productData = checkout;
   
-  // --- THE MASTER OVERRIDE ---
-  // We ignore the database and force 'free_plus_shipping' 
-  // so you always get the Purple Headers, Seal, and Address Fields.
-  const rawFunnelType = 'free_plus_shipping'; 
-  
+  // Use the funnelType from the config, or default to digital
+  const rawFunnelType = productData.funnelType || 'digital_product';
   const config = getFunnelConfig(rawFunnelType); 
   
   const buttonCTA = productData.ctaText || config.defaultButtonText;
   const [amount, setAmount] = useState<number>(checkout.price || 0);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  // Video Logic
+  // VIDEO LOGIC: Check if embed URL exists
   const videoUrl = productData.videoEmbedUrl;
-  const hasVideo = videoUrl && videoUrl.length > 0;
+  const hasVideo = videoUrl && videoUrl.length > 5; // Simple check for valid string
 
   // Fix Price Logic
   if (amount !== checkout.price && !isBumpSelected) {
-      if (amount === 499 && checkout.price === 700) { setAmount(700); }
+      setAmount(checkout.price);
   }
 
   const appearance = {
     theme: 'stripe' as const,
     variables: {
-      colorPrimary: theme.accentColor || '#6366f1', // Use Theme Color
+      colorPrimary: theme.accentColor || '#6366f1',
       colorBackground: '#ffffff', 
       colorText: '#1f2937',
       borderRadius: '8px',
@@ -104,8 +99,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     currency: 'usd',
     appearance,
   };
-
-  // --- COMPONENTS ---
 
   const OrderBumpComponent = (
     <div className="bg-yellow-50 border-2 border-dashed border-yellow-400 rounded-xl p-4 mt-6">
@@ -191,10 +184,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* 30 DAY GUARANTEE SEAL (Mobile/Desktop) */}
+             {/* 30 DAY GUARANTEE SEAL */}
              <div className="mt-8 flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
                  <div className="flex-shrink-0">
-                    {/* Gold Seal SVG */}
                     <svg className="w-16 h-16 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954-1.582 1.605 3.192a1 1 0 01-.44 1.355l-2.006 1.102 2.006 1.103a1 1 0 01.44 1.354L14.954 16.67l-3.954-1.582V17a1 1 0 11-2 0v-1.912l-3.954 1.582-1.605-3.192a1 1 0 01.44-1.354l2.006-1.103-2.006-1.102a1 1 0 01-.44-1.355L6.046 4.323 10 5.905V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clipRule="evenodd"/></svg>
                  </div>
                  <div>
@@ -209,11 +201,17 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             
             {/* WHAT YOU GET */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">What You Get</div> {/* PURPLE HEADER */}
+              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">What You Get</div>
               <div className="p-6">
                  {hasVideo ? (
-                    <div className="mb-6 rounded-lg overflow-hidden shadow-md aspect-video border border-gray-200">
-                        <iframe src={videoUrl} className="w-full h-full" allow="autoplay; encrypted-media" allowFullScreen />
+                    <div className="mb-6 rounded-lg overflow-hidden shadow-md aspect-video border border-gray-200 relative bg-black">
+                        <iframe 
+                          src={videoUrl} 
+                          className="absolute top-0 left-0 w-full h-full" 
+                          allow="autoplay; encrypted-media" 
+                          allowFullScreen 
+                          title="Product Video"
+                        />
                     </div>
                  ) : (
                     <img src={checkout.image} alt={checkout.productName} className="w-full rounded-lg mb-6 shadow-sm border border-gray-100" />
@@ -224,7 +222,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  </div>
                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
                     <ul className="space-y-3">
-                      {checkout.features.map((feature, i) => (
+                      {/* FIX 2: Explicitly type feature and index */}
+                      {checkout.features.map((feature: string, i: number) => (
                         <li key={i} className="flex items-start text-sm text-gray-700">
                           <span className="text-blue-500 font-bold mr-3">✓</span> 
                           <span>{feature}</span>
@@ -237,7 +236,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             
             {/* ORDER SUMMARY */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">Order Summary</div> {/* PURPLE HEADER */}
+              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">Order Summary</div>
               <div className="p-6">
                  <div className="space-y-3">
                     <div className="flex justify-between text-sm text-gray-600">
@@ -257,7 +256,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     <div className="h-px bg-gray-200 my-2"></div>
                     <div className="flex justify-between text-xl font-extrabold text-gray-900">
                         <span>Total</span>
-                        <span className="text-[#6366f1]">${(amount / 100).toFixed(2)}</span> {/* REFINED SUBTOTAL */}
+                        <span className="text-[#6366f1]">${(amount / 100).toFixed(2)}</span>
                     </div>
                  </div>
               </div>
@@ -275,7 +274,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                         </span>
                      </summary>
                      <p className="text-gray-600 text-xs mt-3 group-open:animate-fadeIn">
-                        We ship within 24 hours. Domestic orders typically arrive in 3-5 business days.
+                        We deliver instantly for digital items, and ship within 24 hours for physical goods.
                      </p>
                   </details>
                   <details className="group">
