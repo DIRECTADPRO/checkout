@@ -33,7 +33,7 @@ export interface ProductConfig {
     subhead: string;
     productName: string;
     price: number;
-    videoEmbedUrl: string; // If empty "", shows Image. If set, shows Video.
+    videoEmbedUrl?: string; // If empty "", shows Image. If set, shows Video.
     image: string;
     features: string[];
     stripePriceId: string;
