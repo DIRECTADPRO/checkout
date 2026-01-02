@@ -15,7 +15,7 @@ export default async function UpsellPage({ params }: { params: Promise<{ slug: s
 
   // 2. Fallback
   if (!product) {
-    product = getStaticProduct(slug);
+    product = getStaticProduct(slug); null;
   }
 
   if (!product) {
