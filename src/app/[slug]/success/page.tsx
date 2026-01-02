@@ -2,25 +2,25 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { getProduct } from '@/lib/products';
-import Image from 'next/image';
 
 // Force dynamic rendering so we handle new customers instantly
 export const dynamic = 'force-dynamic';
 
 export default async function SuccessPage({ params }: { params: Promise<{ slug: string }> }) {
-  const { slug } = await params;
+  const resolvedParams = await params;
+  const { slug } = resolvedParams;
   
   // 1. Get the product configuration
   const product = getProduct(slug);
 
-  // --- THE FIX: SAFETY CHECK ---
-  // We stop the code right here if the product is missing.
+  // 2. Safety Check: If product doesn't exist, trigger a 404 immediately.
+  // This satisfies TypeScript that 'product' is not undefined below.
   if (!product) {
     return notFound();
   }
-  // -----------------------------
 
-  const { theme, checkout, oto } = product;
+  // 3. Destructure safe data
+  const { theme, checkout } = product;
 
   return (
     <div style={{ backgroundColor: theme.backgroundColor }} className="min-h-screen flex flex-col items-center justify-center p-6">
@@ -45,7 +45,7 @@ export default async function SuccessPage({ params }: { params: Promise<{ slug: 
                 </div>
             </div>
 
-            {/* OTO LINK (If applicable) */}
+            {/* OTO LINK */}
             <div className="text-center pt-4">
                 <p className="text-gray-500 text-sm mb-4">Did you miss the Family Peace Protocol?</p>
                 <a 
