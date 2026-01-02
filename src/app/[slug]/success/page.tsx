@@ -15,7 +15,6 @@ export default async function SuccessPage({ params }: { params: Promise<{ slug: 
 
   // --- THE FIX: SAFETY CHECK ---
   // We stop the code right here if the product is missing.
-  // This satisfies TypeScript and prevents the crash.
   if (!product) {
     return notFound();
   }
