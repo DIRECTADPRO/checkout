@@ -2,14 +2,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { getProductFromStrapi } from "@/lib/strapi"; 
+import { getProduct as getStaticProduct } from '@/lib/products';
 
 if (!process.env.STRIPE_SECRET_KEY) {
   throw new Error("STRIPE_SECRET_KEY is missing");
 }
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-  // FIX: Updated to match your installed SDK version
-  apiVersion: "2025-11-17.clover", 
+  apiVersion: "2024-11-20.acacia" as any, // Standardized to your working version
   typescript: true,
 });
 
@@ -46,12 +46,17 @@ export async function POST(req: NextRequest) {
        return NextResponse.json({ error: "Missing Customer Data" }, { status: 400 });
     }
 
-    // 3. Get Price from Strapi
-    const product = await getProductFromStrapi(productSlug);
+    // 3. Get Product (Strapi -> Fallback to Local)
+    let product = await getProductFromStrapi(productSlug);
+    
+    if (!product) {
+        // FIX: Fallback to local file if not in Strapi
+        product = getStaticProduct(productSlug) ?? null;
+    }
+
     if (!product) throw new Error("Product not found");
 
     // Determine Price based on Type
-    // The TypeScript error is fixed because we updated ProductConfig to include 'downsell'
     const priceToCharge = type === 'downsell' ? product.downsell?.price : product.oto.price;
 
     if (!priceToCharge) {
