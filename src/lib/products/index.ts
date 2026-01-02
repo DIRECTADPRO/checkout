@@ -17,11 +17,10 @@ export interface ProductConfig {
     subhead: string;
     productName: string;
     price: number;
-    videoEmbedUrl?: string; // OPTIONAL (?) - The key to fixing the error
+    videoEmbedUrl?: string; // OPTIONAL
     image: string;
     features: string[];
     stripePriceId: string;
-    // We allow string here to support the "standalone" legacy blueprint object
     funnelType: 'digital_product' | 'physical_product' | 'free_plus_shipping' | 'tripwire_offer' | 'application_funnel' | 'webinar_live' | 'saas_trial' | string;
     ctaText?: string;
   };
@@ -40,6 +39,13 @@ export interface ProductConfig {
     features: string[];
     stripePriceId: string;
     ctaText?: string;
+  };
+  // --- THE FIX: WE ADD THE DOWNSELL HERE AS OPTIONAL ---
+  downsell?: {
+    headline: string;
+    description: string;
+    price: number;
+    stripePriceId: string;
   };
 }
 
