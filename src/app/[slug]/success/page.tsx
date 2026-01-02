@@ -1,68 +1,65 @@
 /* FILE: src/app/[slug]/success/page.tsx */
-'use client';
-
 import React from 'react';
-import { useParams } from 'next/navigation';
-// Using relative path to ensure it finds the file without alias config issues
-import { getProduct } from '@/lib/products'; 
+import { notFound } from 'next/navigation';
+import { getProduct } from '@/lib/products';
+import Image from 'next/image';
 
-interface DynamicBackgroundProps {
-    color: string;
-}
+// Force dynamic rendering so we handle new customers instantly
+export const dynamic = 'force-dynamic';
 
-// FIX: Switched from <style jsx> to dangerouslySetInnerHTML to resolve TypeScript error
-const DynamicBackground = ({ color }: DynamicBackgroundProps) => (
-    <div style={{ position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh', zIndex: -1, background: color, overflow: 'hidden' }}>
-        <style dangerouslySetInnerHTML={{__html: `
-            @keyframes float { 
-                0% { transform: translate(0,0); } 
-                50% { transform: translate(20px,-20px); } 
-                100% { transform: translate(0,0); } 
-            }
-        `}} />
-        <div style={{ 
-            position: 'absolute', top: '-10%', left: '-10%', width: '50vw', height: '50vw', 
-            background: 'radial-gradient(circle, rgba(106,69,255,0.1) 0%, rgba(255,255,255,0) 70%)', 
-            filter: 'blur(60px)', borderRadius: '50%', animation: 'float 15s infinite ease-in-out' 
-        }} />
-    </div>
-);
+export default async function SuccessPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
+  // 1. Get the product configuration
+  const product = getProduct(slug);
 
-export default function DynamicSuccessPage() {
-    // Robust way to get params in Client Components
-    const params = useParams();
-    const slug = typeof params?.slug === 'string' ? params.slug : 'email-bundle';
-    
-    // Fail-safe: default to first product if slug is missing during initial render
-    const product = getProduct(slug); 
-    const { theme, checkout } = product;
+  // --- THE FIX: SAFETY CHECK ---
+  // We stop the code right here if the product is missing.
+  // This satisfies TypeScript and prevents the crash.
+  if (!product) {
+    return notFound();
+  }
+  // -----------------------------
 
-    return (
-        <>
-        <DynamicBackground color={theme.backgroundColor} />
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', padding: '20px', fontFamily: 'system-ui, -apple-system, sans-serif', textAlign: 'center', position: 'relative', zIndex: 1 }}>
-            
-            <div style={{ backgroundColor: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1)', maxWidth: '500px', width: '100%' }}>
-                
-                <div style={{ width: '80px', height: '80px', backgroundColor: theme.primaryColor + '11', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px auto' }}>
-                    <span style={{ fontSize: '40px', color: theme.primaryColor }}>✓</span>
+  const { theme, checkout, oto } = product;
+
+  return (
+    <div style={{ backgroundColor: theme.backgroundColor }} className="min-h-screen flex flex-col items-center justify-center p-6">
+      
+      <div className="max-w-2xl w-full bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-100">
+        
+        {/* HEADER */}
+        <div style={{ backgroundColor: theme.primaryColor }} className="p-8 text-center">
+            <h1 className="text-3xl font-bold text-white mb-2">Order Confirmed!</h1>
+            <p className="text-white/80">Your secure access link has been sent to your email.</p>
+        </div>
+
+        {/* BODY */}
+        <div className="p-8 space-y-6">
+            <div className="flex items-center gap-4 p-4 bg-green-50 rounded-lg border border-green-100">
+                <div className="h-12 w-12 bg-green-100 rounded-full flex items-center justify-center text-2xl">
+                    ✅
                 </div>
-                
-                <h1 style={{ fontSize: '28px', fontWeight: '800', color: '#111827', marginBottom: '10px' }}>Order Confirmed!</h1>
-                <p style={{ fontSize: '16px', color: '#4B5563', lineHeight: '1.6', marginBottom: '30px' }}>
-                    Your access to the **{checkout.productName}** system is now complete. Your receipt and login details have been sent to your email.
-                </p>
-
-                <div style={{ padding: '15px', backgroundColor: '#F3F4F6', borderRadius: '8px', marginBottom: '30px' }}>
-                    <p style={{ margin: 0, fontSize: '14px', color: '#6B7280' }}>Order ID: #882910-XJ</p>
+                <div>
+                    <h3 className="font-bold text-gray-900">Payment Successful</h3>
+                    <p className="text-sm text-gray-600">You will see a charge from "{checkout.productName}" on your statement.</p>
                 </div>
-
-                <button style={{ backgroundColor: theme.accentColor, color: 'white', padding: '14px 28px', borderRadius: '8px', fontWeight: '600', border: 'none', cursor: 'pointer', width: '100%' }}>
-                    Access Member Area Now
-                </button>
             </div>
 
+            {/* OTO LINK (If applicable) */}
+            <div className="text-center pt-4">
+                <p className="text-gray-500 text-sm mb-4">Did you miss the Family Peace Protocol?</p>
+                <a 
+                   href={`/${slug}/oto`}
+                   style={{ color: theme.accentColor }} 
+                   className="font-bold hover:underline"
+                >
+                    Click here to check availability &rarr;
+                </a>
+            </div>
         </div>
-        </>
-    );
+
+      </div>
+    </div>
+  );
 }
