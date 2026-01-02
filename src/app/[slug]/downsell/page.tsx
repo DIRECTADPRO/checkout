@@ -15,7 +15,8 @@ export default async function DownsellPage({ params }: { params: Promise<{ slug:
 
   // 2. Fallback to Static Data if Strapi fails
   if (!product) {
-    product = getStaticProduct(slug);
+    // FIX APPLIED: We force 'undefined' to become 'null' so TypeScript accepts it.
+    product = getStaticProduct(slug) ?? null;
   }
 
   if (!product) {
