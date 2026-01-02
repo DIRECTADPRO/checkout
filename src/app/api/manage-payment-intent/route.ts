@@ -20,7 +20,8 @@ export async function POST(req: NextRequest) {
     // 1. FETCH PRODUCT
     let product = await getProductFromStrapi(productSlug);
     if (!product) {
-      product = getStaticProduct(productSlug);
+      // FIX: The '?? null' ensures types match (null vs undefined)
+      product = getStaticProduct(productSlug) ?? null;
     }
     if (!product) return NextResponse.json({ error: "Product not found" }, { status: 404 });
 
