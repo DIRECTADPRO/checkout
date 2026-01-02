@@ -1,4 +1,3 @@
-/* FILE: src/app/[slug]/upsell/page.tsx */
 import React from 'react';
 import { notFound } from 'next/navigation';
 import UpsellClient from './UpsellClient';
@@ -15,7 +14,8 @@ export default async function UpsellPage({ params }: { params: Promise<{ slug: s
 
   // 2. Fallback
   if (!product) {
-    product = getStaticProduct(slug); null;
+    // FIX: The '?? null' satisfies TypeScript strict checks
+    product = getStaticProduct(slug) ?? null;
   }
 
   if (!product) {
