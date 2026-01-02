@@ -1,24 +1,8 @@
-// ============================================================================
-//  🚀 TANK COMMAND CENTER: PRODUCT REGISTRY
-// ============================================================================
-//  This file controls your entire website. 
-//  If it is listed here, it is LIVE.
-//  If it is not listed here, it does not exist.
-// ============================================================================
+// --- FILE: src/lib/products/index.ts ---
 
-// ----------------------------------------------------------------------------
-//  👇 ZONE 1: IMPORT YOUR FILES HERE
-//  (When you drag a new file into this folder, import it below)
-// ----------------------------------------------------------------------------
 import { legacyBlueprint } from './legacy-blueprint';
-// import { myNewBook } from './my-new-book';   <-- Example of next import
-// import { tripwire } from './tripwire';       <-- Example of next import
 
-
-// ============================================================================
-//  ⛔ RESTRICTED ZONE: DO NOT TOUCH
-//  (This defines the rules for the system. Leave this alone.)
-// ============================================================================
+// THE RULES (Interface)
 export interface ProductConfig {
   id: string;
   theme: {
@@ -33,11 +17,12 @@ export interface ProductConfig {
     subhead: string;
     productName: string;
     price: number;
-    videoEmbedUrl?: string; // If empty "", shows Image. If set, shows Video.
+    videoEmbedUrl?: string; // OPTIONAL (?) - The key to fixing the error
     image: string;
     features: string[];
     stripePriceId: string;
-    funnelType: 'digital_product' | 'physical_product' | 'free_plus_shipping' | 'tripwire_offer' | 'application_funnel' | 'webinar_live' | 'saas_trial';
+    // We allow string here to support the "standalone" legacy blueprint object
+    funnelType: 'digital_product' | 'physical_product' | 'free_plus_shipping' | 'tripwire_offer' | 'application_funnel' | 'webinar_live' | 'saas_trial' | string;
     ctaText?: string;
   };
   bump: {
@@ -54,31 +39,17 @@ export interface ProductConfig {
     retailPrice: number;
     features: string[];
     stripePriceId: string;
-    ctaText?: string; // Optional override for OTO button
+    ctaText?: string;
   };
 }
 
-// ----------------------------------------------------------------------------
-//  👇 ZONE 2: REGISTER YOUR PRODUCTS HERE
-//  (This maps the URL to the File. "key" = "website.com/key")
-// ----------------------------------------------------------------------------
+// THE REGISTRY
 export const products: Record<string, ProductConfig> = {
-
-  // --- URL: yoursite.com/legacy-blueprint ---
-  "legacy-blueprint": legacyBlueprint,
-
-  // --- URL: yoursite.com/book (Example for future) ---
-  // "book": myNewBook,
-
-  // --- URL: yoursite.com/special-offer (Example for future) ---
-  // "special-offer": tripwire,
-
+  // This maps the URL "/legacy-blueprint" to your file
+  "legacy-blueprint": legacyBlueprint as ProductConfig, 
 };
 
-// ----------------------------------------------------------------------------
-//  👇 ZONE 3: THE ENGINE (Helper Functions)
-//  (This allows the website to safely grab a product. Do not touch.)
-// ----------------------------------------------------------------------------
+// THE ENGINE
 export function getProduct(slug: string): ProductConfig | undefined {
   return products[slug];
 }
