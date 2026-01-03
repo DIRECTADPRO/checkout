@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint"
   },
-  "dependencies": {
+  "cacheDirectories": [".next/cache"],  "dependencies": {
     "@clerk/nextjs": "^6.36.0",
     "@stripe/react-stripe-js": "^5.4.0",
     "@stripe/stripe-js": "^8.5.2",
