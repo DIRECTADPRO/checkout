@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { 
   PaymentElement, 
   AddressElement,
+  LinkAuthenticationElement, // NEW: Standard Email Capture
   useStripe, 
   useElements 
 } from '@stripe/react-stripe-js';
@@ -55,10 +56,28 @@ export default function CheckoutForm({
   return (
     <form id="payment-form" onSubmit={handleSubmit} className="w-full">
       
-      {/* 1. SHIPPING - Animation smoothed */}
+      {/* 1. CONTACT INFO (EMAIL) - NEW SECTION */}
+      <div className="mb-6">
+         <div className="flex justify-between items-end mb-1.5 ml-1">
+            <h3 className="block text-sm font-semibold text-gray-700">
+                Contact Information
+            </h3>
+            {/* THE "EMAIL BONUS" HOOK */}
+            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
+               🎁 Free Bonus sent to this email
+            </span>
+         </div>
+         
+         {/* Stripe's Built-in Email Field (Handles Validation & Link) */}
+         <LinkAuthenticationElement 
+            id="link-authentication-element"
+            options={{ defaultValues: { email: '' } }} // Start empty
+         />
+      </div>
+
+      {/* 2. SHIPPING (Conditional) */}
       {funnelConfig.requiresShipping && (
          <div className="mb-6 animate-[fadeIn_0.4s_ease-out]">
-             {/* Using a label style that matches Stripe's internal labels */}
              <h3 className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
                 Shipping Address
              </h3>
@@ -66,22 +85,25 @@ export default function CheckoutForm({
          </div>
       )}
 
-      {/* 2. PAYMENT - Container styling handled by Stripe Appearance in Parent, but we add margin */}
+      {/* 3. PAYMENT */}
       <div className="mb-8">
+        <h3 className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+            Payment Details
+        </h3>
         <PaymentElement id="payment-element" options={{layout: "tabs"}} />
       </div>
 
-      {/* 3. ORDER BUMP (Injected from Parent) */}
+      {/* 4. ORDER BUMP (Injected from Parent) */}
       {children}
 
-      {/* 4. PREMIUM CTA BUTTON */}
+      {/* 5. PREMIUM CTA BUTTON */}
       <button 
         disabled={isLoading || !stripe || !elements} 
         id="submit"
         className={`
             w-full group relative flex justify-center items-center mt-6
             py-4 px-6 rounded-lg text-white font-bold text-xl tracking-wide
-            /* THE FIX: Executive Gradient (Gold -> Burnt Orange -> Red) */
+            /* Executive Gradient (Gold -> Burnt Orange -> Red) */
             bg-gradient-to-r from-yellow-600 via-orange-600 to-red-700
             hover:from-yellow-500 hover:via-orange-500 hover:to-red-600
             shadow-[0_4px_14px_0_rgba(194,65,12,0.39)] 

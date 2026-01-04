@@ -113,18 +113,14 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     appearance,
   };
 
-  // --- HIGH-CONVERSION ORDER BUMP (OPTIMIZED) ---
   const OrderBumpComponent = (
     <div className="relative overflow-hidden bg-[#FFFDF5] border-2 border-dashed border-amber-300 rounded-xl p-5 mt-8 transition-all hover:border-amber-400 group">
-      {/* Blinking Badge */}
       <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider flex items-center gap-1">
         <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
         Recommended
       </div>
-
       <label className="flex items-start cursor-pointer select-none gap-4 relative z-10" htmlFor="bump-offer">
         <div className="flex-shrink-0 mt-1">
-          {/* Custom Checkbox Styling */}
           <input 
             type="checkbox" 
             id="bump-offer" 
@@ -139,9 +135,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              <svg className="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
           </div>
         </div>
-
         <div className="flex-1">
-          {/* FIXED: Removed hardcoded "ONE-TIME OFFER" span to prevent duplication with data */}
           <span className="block text-base font-bold text-gray-900 mb-1 leading-snug">
              {bump.headline}
           </span>
@@ -150,7 +144,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           </p>
           <p className="text-gray-900 font-bold text-sm flex items-center gap-2">
              <span className="text-green-700">Yes, add this to my order.</span>
-             {/* Price Anchoring */}
              <span className="text-gray-400 font-normal line-through text-xs">$97.00</span>
              <span className="text-gray-900 underline decoration-amber-400 decoration-2">Only ${(bump.price / 100).toFixed(2)}</span>
           </p>
@@ -163,22 +156,17 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     <div className="min-h-screen font-sans bg-[#F8F9FA] pb-24 text-gray-900">
       <SocialProofPopup />
 
-      {/* --- HEADER SECTION: FIXED PROPORTIONS --- */}
+      {/* --- HEADER SECTION --- */}
       <div className="bg-white border-b border-gray-100 shadow-sm pt-10 pb-12 mb-10">
         <div className="max-w-3xl mx-auto px-6 text-center">
-            {/* 1. Logo: Increased Size (h-10 -> h-16) for Authority */}
             {theme.logoUrl ? (
               <img src={theme.logoUrl} alt="Logo" className="mx-auto h-16 md:h-20 mb-8 object-contain" />
             ) : (
               <div className="text-3xl font-serif font-bold mb-8 tracking-tight">THE LEGACY BLUEPRINT</div>
             )}
-            
-            {/* 2. Headline: Reduced Size (4xl -> 3xl) to handle long copy elegantly */}
             <h1 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-4 leading-tight">
               {checkout.headline}
             </h1>
-            
-            {/* 3. Subhead: Better max-width and color for contrast */}
             <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               {checkout.subhead}
             </p>
@@ -193,26 +181,21 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              {/* Main Card */}
              <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 
-                {/* Progress Header */}
-                <div className="bg-gray-50/80 px-8 py-5 border-b border-gray-100 flex items-center justify-between backdrop-blur-sm">
-                   <div className="flex items-center gap-3">
-                      <div className="bg-gray-900 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-sm">1</div>
-                      <h2 className="font-bold text-gray-800 tracking-tight">Secure Checkout</h2>
+                {/* --- FIXED HEADER: NAVY BLUE with GOLD LOCK --- */}
+                <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between font-bold text-sm tracking-wide uppercase">
+                   <div className="flex items-center gap-2">
+                      {/* GOLD LOCK ICON: The "Golden Thread" Fix */}
+                      <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
+                      <span>Secure Checkout</span>
                    </div>
-                   <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
-                      <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
-                      AES-256 Encrypted
+                   {/* Trust Indicator */}
+                   <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-semibold tracking-widest opacity-80">
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                      AES-256
                    </div>
                 </div>
 
-                <div className="p-6 md:p-10">
-                    <div className="mb-8">
-                       <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                          {config.requiresShipping ? 'Shipping Information' : 'Contact Information'}
-                       </h3>
-                       <div className="h-px w-full bg-gray-100 mb-6"></div>
-                    </div>
-
+                <div className="p-6">
                     <Elements options={options} stripe={stripePromise}>
                       <CheckoutForm 
                           amountInCents={amount} 
@@ -227,13 +210,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* --- THE ULTIMATE GUARANTEE SECTION (WITH 3D SEAL) --- */}
+             {/* --- GUARANTEE SECTION --- */}
              <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
-               {/* Background Texture */}
                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
-               
                <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
-                 {/* 1. The Visual Anchor (3D Seal or Fallback) */}
                  <div className="flex-shrink-0">
                    {product.checkout.guaranteeBadge ? (
                      <img 
@@ -248,25 +228,15 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                      </div>
                    )}
                  </div>
-
-                 {/* 2. The Legal Promise (Copy) */}
                  <div className="flex-1">
                    <h3 className="font-serif text-xl font-bold text-gray-900 mb-2">
                      The "Sleep Well At Night" 365-Day Promise
                    </h3>
                    <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
-                     <p>
-                       We are asking you to trust us with your family's future. We take that responsibility seriously.
-                     </p>
-                     <p>
-                       <strong className="text-gray-900">Here is the deal:</strong> Download the Survivor's Manual. Fill it out. If you don't feel an immediate, physical weight lift off your shoulders—or if your family doesn't thank you for it—simply email us.
-                     </p>
-                     <p>
-                       We will refund <span className="underline decoration-yellow-400 decoration-2 font-medium text-gray-900">100% of your money</span>. No questions asked. And you can <strong className="text-gray-900">keep the files</strong> as our apology for wasting your time.
-                     </p>
+                     <p>We are asking you to trust us with your family's future. We take that responsibility seriously.</p>
+                     <p><strong className="text-gray-900">Here is the deal:</strong> Download the Survivor's Manual. Fill it out. If you don't feel an immediate, physical weight lift off your shoulders—or if your family doesn't thank you for it—simply email us.</p>
+                     <p>We will refund <span className="underline decoration-yellow-400 decoration-2 font-medium text-gray-900">100% of your money</span>. No questions asked. And you can <strong className="text-gray-900">keep the files</strong> as our apology for wasting your time.</p>
                    </div>
-                   
-                   {/* 3. The Personal Signature (Authority) */}
                    <div className="mt-6 flex items-center gap-3 pt-6 border-t border-gray-100">
                       <div className="h-px w-8 bg-gray-900"></div>
                       <span className="font-serif italic text-gray-900 text-lg">The Founders</span>
@@ -279,76 +249,73 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           {/* RIGHT COLUMN: SIDEBAR */}
           <div className="lg:col-span-5 xl:col-span-4 space-y-8">
             
-            {/* PRODUCT CARD */}
+            {/* PRODUCT CARD - NAVY HEADER */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden sticky top-6">
               <div className="bg-gray-900 text-white px-6 py-4 font-bold text-sm tracking-wide uppercase flex justify-between items-center">
                  <span>Your Order</span>
                  <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
               </div>
               
-              <div className="p-6">
-                 {/* Product Image */}
-                 <div className="-mx-6 -mt-6 mb-6 bg-gray-50 border-b border-gray-100">
+              <div className="p-0">
+                 <div className="bg-gray-50 border-b border-gray-100">
                     {hasVideo ? (
                         <div className="aspect-video w-full relative">
-                            <iframe 
-                              src={videoUrl} 
-                              className="absolute inset-0 w-full h-full" 
-                              allow="autoplay; encrypted-media" 
-                              allowFullScreen 
-                            />
+                            <iframe src={videoUrl} className="absolute inset-0 w-full h-full" allow="autoplay; encrypted-media" allowFullScreen />
                         </div>
                     ) : (
                         <img src={checkout.image} alt={checkout.productName} className="w-full h-auto object-cover" />
                     )}
                  </div>
 
-                 <div className="mb-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{checkout.productName}</h3>
-                    <p className="text-sm text-green-600 font-bold flex items-center gap-1">
-                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-                        {config.fulfillmentMode === 'physical' ? 'In Stock - Ships Tomorrow' : 'Instant Digital Access'}
-                    </p>
-                 </div>
-
-                 {/* Feature List */}
-                 <div className="bg-blue-50/50 rounded-lg p-5 mb-6 border border-blue-100">
-                    <ul className="space-y-3">
-                      {checkout.features.map((feature: string, i: number) => (
-                        <li key={i} className="flex items-start text-sm text-gray-700">
-                          <svg className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                          <span className="font-medium">{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                 </div>
-
-                 {/* Order Summary Table */}
-                 <div className="space-y-3 pt-6 border-t border-gray-100">
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>The Legacy Blueprint</span>
-                        <span className="font-medium text-gray-900">${(checkout.price / 100).toFixed(2)}</span>
+                 <div className="p-6">
+                    <div className="mb-6">
+                        <h3 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{checkout.productName}</h3>
+                        <p className="text-sm text-green-600 font-bold flex items-center gap-1">
+                            <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                            {config.fulfillmentMode === 'physical' ? 'In Stock - Ships Tomorrow' : 'Instant Digital Access'}
+                        </p>
                     </div>
-                    {isBumpSelected && (
-                        <div className="flex justify-between text-sm text-amber-700 font-medium">
-                            <span>Digital Twin Upgrade</span>
-                            <span>${(bump.price / 100).toFixed(2)}</span>
+
+                    <div className="bg-blue-50/50 rounded-lg p-5 mb-6 border border-blue-100">
+                        <ul className="space-y-3">
+                        {checkout.features.map((feature: string, i: number) => (
+                            <li key={i} className="flex items-start text-sm text-gray-700">
+                            <svg className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                            <span className="font-medium">{feature}</span>
+                            </li>
+                        ))}
+                        </ul>
+                    </div>
+                 </div>
+
+                 {/* Order Summary */}
+                 <div className="p-6 border-t border-gray-100 bg-white">
+                    <div className="space-y-3">
+                        <div className="flex justify-between text-sm text-gray-600">
+                            <span>The Legacy Blueprint</span>
+                            <span className="font-medium text-gray-900">${(checkout.price / 100).toFixed(2)}</span>
                         </div>
-                    )}
-                    <div className="flex justify-between text-sm text-gray-600">
-                        <span>Shipping & Handling</span>
-                        <span className="font-medium text-gray-900">FREE</span>
-                    </div>
-                    
-                    <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-dashed border-gray-200 mt-4">
-                        <span>Total</span>
-                        <span>${(amount / 100).toFixed(2)}</span>
+                        {isBumpSelected && (
+                            <div className="flex justify-between text-sm text-amber-700 font-medium">
+                                <span>Digital Twin Upgrade</span>
+                                <span>${(bump.price / 100).toFixed(2)}</span>
+                            </div>
+                        )}
+                        <div className="flex justify-between text-sm text-gray-600">
+                            <span>Shipping & Handling</span>
+                            <span className="font-medium text-gray-900">FREE</span>
+                        </div>
+                        
+                        <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-dashed border-gray-200 mt-4">
+                            <span>Total</span>
+                            <span>${(amount / 100).toFixed(2)}</span>
+                        </div>
                     </div>
                  </div>
               </div>
             </div>
 
-            {/* Simple FAQ */}
+            {/* FAQ */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                <h4 className="font-bold text-gray-500 mb-4 text-sm uppercase tracking-wide">Common Questions</h4>
                <div className="space-y-4">
