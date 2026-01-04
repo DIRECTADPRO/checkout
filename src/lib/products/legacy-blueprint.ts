@@ -11,10 +11,10 @@ export const legacyBlueprint = {
     logoUrl: "https://res.cloudinary.com/dse1cikja/image/upload/v1767295060/BLUEPRINTAsset_1_2x-8_vucxxa.png",
     logoWidth: "180px"
   },
-  checkout: {
-    headline: "The Red Protocol: The 'First 48 Hours' Checklist Your Family Doesn't Have.",
-    subhead: "Standard wills handle the money, but they fail to handle the chaos. This is the operational manual for when the silence settles.",
-    productName: "The Legacy Blueprint (Red Protocol Edition)",
+checkout: {
+  headline: "Your Lawyer Prepared Them for the Probate Court. Who Prepares Them for the First 48 Hours?",
+  subhead: "Wills handle the wealth. This handles the logistics. The operational 'Crisis Map' that guides your family through the confusing, terrifying silence immediately following a loss—before the lawyers ever get involved.",
+  productName: "The Legacy Blueprint (Red Protocol Edition)",
     
     price: 3700, 
     image: "https://res.cloudinary.com/dse1cikja/image/upload/v1767485592/BLUEPRINTAsset_3_2x-8_zwfaa9.png", 
@@ -25,23 +25,22 @@ export const legacyBlueprint = {
     videoEmbedUrl: "", 
 
     features: [
-      "The Red Protocol: Immediate 'Crisis Map' for the First 48 Hours",
-      "The Digital Estate: Master Key System for Passwords & 2FA",
-      "Hidden Asset Recovery: Cold Storage & Safe Deposit Locator",
-      "The 'Do Not Sell' List: Heirloom protection protocol"
+      "The 'First 48 Hours' Crisis Pilot: Autopilots your family through the chaos so they can grieve without panic.",
+      "The Digital 'Skeleton Key': Grants instant access to locked phones, crypto, and accounts—preventing digital lockout.",
+      "The Hidden Asset Locator: Finds every forgotten safe deposit box and account so your wealth doesn't vanish.",
+      "The Heirloom Peace Treaty: Prevents family war by designating sentimental items before the fighting starts."
     ],
     
     // YOUR CORE PRODUCT ID ($37)
     stripePriceId: "price_1SkpGiKWkFGAPPbCu0hwJqTT",
     
     funnelType: 'digital_product', 
-    ctaText: "Secure My Legacy ($37)"
+    ctaText: "Secure My Survivor's Manual"
   },
   
-  bump: {
-    headline: "YES! Upgrade to the 'Digital Twin' & Data-Entry Suite (+$17)",
-    description: "Don't handwrite 100+ pages. Get the Fillable PDF + Excel 'Data Vault' to finish in 20 mins. Auto-calculates net worth. Error-proof.",
-    
+bump: {
+    headline: "ONE-TIME OFFER: Upgrade to the 'Digital Twin' & Auto-Fill Suite",
+    description: "Don't cramp your hand writing 100+ pages. Get the Fillable PDF + Excel 'Data Vault' to copy-paste passwords and auto-calculate Net Worth in minutes. Finish twice as fast.",
     price: 1700, 
     
     // YOUR BUNDLE PRODUCT ID ($54)

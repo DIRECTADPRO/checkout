@@ -211,26 +211,46 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* Guarantee Seal */}
-             {product.checkout.guaranteeBadge ? (
-               <div className="mt-10 flex justify-center w-full opacity-90 hover:opacity-100 transition-opacity">
-                 <img 
-                   src={product.checkout.guaranteeBadge} 
-                   alt="100% Satisfaction Guarantee" 
-                   className="h-28 w-auto object-contain" 
-                 />
-               </div>
-             ) : (
-               <div className="mt-8 flex items-start gap-5 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                   <div className="flex-shrink-0 bg-yellow-50 p-3 rounded-full">
-                      <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+             {/* --- THE ULTIMATE GUARANTEE SECTION --- */}
+             <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
+               {/* Background Texture for "Official" Feel */}
+               <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
+               
+               <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
+                 {/* 1. The Visual Anchor (Seal) */}
+                 <div className="flex-shrink-0">
+                   <div className="relative h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 border border-gray-100 shadow-inner">
+                      <svg className="h-10 w-10 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                      {/* Gold Accent for Value */}
+                      <div className="absolute inset-0 rounded-full border-2 border-yellow-500/20"></div>
                    </div>
-                   <div>
-                      <h3 className="font-bold text-gray-900 text-lg mb-1">30-Day Money-Back Guarantee</h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">If this system doesn't give you complete peace of mind, simply email us within 30 days for a full refund. No questions asked.</p>
+                 </div>
+
+                 {/* 2. The Legal Promise (Copy) */}
+                 <div className="flex-1">
+                   <h3 className="font-serif text-xl font-bold text-gray-900 mb-2">
+                     The "Sleep Well At Night" 365-Day Promise
+                   </h3>
+                   <div className="space-y-3 text-sm text-gray-600 leading-relaxed">
+                     <p>
+                       We are asking you to trust us with your family's future. We take that responsibility seriously.
+                     </p>
+                     <p>
+                       <strong className="text-gray-900">Here is the deal:</strong> Download the Survivor's Manual. Fill it out. If you don't feel an immediate, physical weight lift off your shoulders—or if your family doesn't thank you for it—simply email us.
+                     </p>
+                     <p>
+                       We will refund <span className="underline decoration-yellow-400 decoration-2 font-medium text-gray-900">100% of your money</span>. No questions asked. And you can <strong className="text-gray-900">keep the files</strong> as our apology for wasting your time.
+                     </p>
                    </div>
+                   
+                   {/* 3. The Personal Signature (Authority) */}
+                   <div className="mt-6 flex items-center gap-3 pt-6 border-t border-gray-100">
+                      <div className="h-px w-8 bg-gray-900"></div>
+                      <span className="font-serif italic text-gray-900 text-lg">The Founders</span>
+                   </div>
+                 </div>
                </div>
-             )}
+             </div>
           </div>
           
           {/* RIGHT COLUMN: SIDEBAR */}
@@ -305,7 +325,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               </div>
             </div>
 
-            {/* Simple FAQ - FIXED CONFLICT HERE */}
+            {/* Simple FAQ */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
                <h4 className="font-bold text-gray-500 mb-4 text-sm uppercase tracking-wide">Common Questions</h4>
                <div className="space-y-4">
