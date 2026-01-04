@@ -12,8 +12,8 @@ export const legacyBlueprint = {
     logoWidth: "180px"
   },
 checkout: {
-  headline: "Your Lawyer Prepared Them for the Probate Court. Who Prepares Them for the First 48 Hours?",
-  subhead: "Wills handle the wealth. This handles the logistics. The operational 'Crisis Map' that guides your family through the confusing, terrifying silence immediately following a loss—before the lawyers ever get involved.",
+  headline: "Your Lawyer Prepared Your Family for the Probate Court. But Who Prepares Them for the First 48 Hours?",
+  subhead: "Wills handle the wealth. The Manual handles the chaos. The comprehensive operational system that guides your family through the immediate crisis and the months of logistics that follow.",
   productName: "The Legacy Blueprint (Red Protocol Edition)",
     
     price: 3700, 
@@ -25,10 +25,10 @@ checkout: {
     videoEmbedUrl: "", 
 
     features: [
-      "The 'First 48 Hours' Crisis Pilot: Autopilots your family through the chaos so they can grieve without panic.",
-      "The Digital 'Skeleton Key': Grants instant access to locked phones, crypto, and accounts—preventing digital lockout.",
-      "The Hidden Asset Locator: Finds every forgotten safe deposit box and account so your wealth doesn't vanish.",
-      "The Heirloom Peace Treaty: Prevents family war by designating sentimental items before the fighting starts."
+      "The Crisis Pilot: Autopilots your family through the chaos of the first 48 hours.",
+      "Digital Skeleton Key: Grants instant access to locked phones and frozen accounts.",
+      "Hidden Asset Locator: Finds forgotten wealth before it vanishes to the state.",
+      "Heirloom Peace Treaty: Prevents family wars over sentimental items."
     ],
     
     // YOUR CORE PRODUCT ID ($37)
