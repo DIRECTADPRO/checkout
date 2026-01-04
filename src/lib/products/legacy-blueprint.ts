@@ -17,7 +17,7 @@ checkout: {
   productName: "The Legacy Blueprint (Red Protocol Edition)",
     
     price: 3700, 
-    image: "https://res.cloudinary.com/dse1cikja/image/upload/v1767485592/BLUEPRINTAsset_3_2x-8_zwfaa9.png", 
+    image: "https://res.cloudinary.com/dse1cikja/image/upload/v1767504021/BLUEPRINTAsset_4_2x-8_fqirpq.png", 
    
     // THIS IS THE MISSING LINE THAT MAKES THE SHIELD APPEAR
     guaranteeBadge: "https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Badge_b86eiv.png",
