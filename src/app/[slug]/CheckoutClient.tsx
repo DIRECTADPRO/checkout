@@ -113,34 +113,46 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     appearance,
   };
 
+  // --- HIGH-CONVERSION ORDER BUMP (OPTIMIZED) ---
   const OrderBumpComponent = (
-    <div className="relative overflow-hidden bg-amber-50/50 border border-amber-200 rounded-xl p-5 mt-8 transition-all hover:border-amber-300">
-      <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">
+    <div className="relative overflow-hidden bg-[#FFFDF5] border-2 border-dashed border-amber-300 rounded-xl p-5 mt-8 transition-all hover:border-amber-400 group">
+      {/* Blinking Badge */}
+      <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 text-[10px] font-bold px-3 py-1 rounded-bl-lg uppercase tracking-wider flex items-center gap-1">
+        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse"></span>
         Recommended
       </div>
-      <label className="flex items-start cursor-pointer select-none gap-4" htmlFor="bump-offer">
+
+      <label className="flex items-start cursor-pointer select-none gap-4 relative z-10" htmlFor="bump-offer">
         <div className="flex-shrink-0 mt-1">
+          {/* Custom Checkbox Styling */}
           <input 
             type="checkbox" 
             id="bump-offer" 
-            className="h-5 w-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
+            className="peer sr-only" 
             checked={isBumpSelected}
             onChange={(e) => {
               setIsBumpSelected(e.target.checked);
               setAmount(e.target.checked ? checkout.price + bump.price : checkout.price);
             }}
           />
+          <div className="h-6 w-6 rounded border-2 border-gray-300 bg-white peer-checked:bg-blue-600 peer-checked:border-blue-600 flex items-center justify-center transition-all shadow-sm group-hover:border-blue-400">
+             <svg className="w-4 h-4 text-white opacity-0 peer-checked:opacity-100 transition-opacity" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+          </div>
         </div>
+
         <div className="flex-1">
+          {/* FIXED: Removed hardcoded "ONE-TIME OFFER" span to prevent duplication with data */}
           <span className="block text-base font-bold text-gray-900 mb-1 leading-snug">
-             <span className="text-red-700 uppercase mr-1.5 font-extrabold">ONE-TIME OFFER:</span> 
              {bump.headline}
           </span>
-          <p className="text-sm text-gray-600 leading-relaxed mb-2">
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
              {bump.description}
           </p>
-          <p className="text-amber-700 font-bold text-sm flex items-center gap-1">
-             Add to order for just <span className="underline decoration-amber-300 decoration-2">${(bump.price / 100).toFixed(2)}</span>
+          <p className="text-gray-900 font-bold text-sm flex items-center gap-2">
+             <span className="text-green-700">Yes, add this to my order.</span>
+             {/* Price Anchoring */}
+             <span className="text-gray-400 font-normal line-through text-xs">$97.00</span>
+             <span className="text-gray-900 underline decoration-amber-400 decoration-2">Only ${(bump.price / 100).toFixed(2)}</span>
           </p>
         </div>
       </label>
