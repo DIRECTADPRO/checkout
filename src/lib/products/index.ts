@@ -17,12 +17,14 @@ export interface ProductConfig {
     subhead: string;
     productName: string;
     price: number;
-    videoEmbedUrl?: string; // OPTIONAL
+    videoEmbedUrl?: string;
     image: string;
     features: string[];
     stripePriceId: string;
-    funnelType: 'digital_product' | 'physical_product' | 'free_plus_shipping' | 'tripwire_offer' | 'application_funnel' | 'webinar_live' | 'saas_trial' | string;
+    funnelType: string;
     ctaText?: string;
+    // --- ADD THIS LINE BELOW ---
+    guaranteeBadge?: string; 
   };
   bump: {
     headline: string;
@@ -40,7 +42,6 @@ export interface ProductConfig {
     stripePriceId: string;
     ctaText?: string;
   };
-  // --- THE FIX: WE ADD THE DOWNSELL HERE AS OPTIONAL ---
   downsell?: {
     headline: string;
     description: string;
@@ -51,7 +52,6 @@ export interface ProductConfig {
 
 // THE REGISTRY
 export const products: Record<string, ProductConfig> = {
-  // This maps the URL "/legacy-blueprint" to your file
   "legacy-blueprint": legacyBlueprint as ProductConfig, 
 };
 

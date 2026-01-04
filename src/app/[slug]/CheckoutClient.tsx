@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import { loadStripe, StripeElementsOptions } from '@stripe/stripe-js';
 import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
-// FIX 1: Point directly to the index file so it finds the folder correctly
 import { ProductConfig } from '@/lib/products/index'; 
 import { getFunnelConfig } from '@/lib/funnel-types';
 import '@/styles/checkout-design.css';
@@ -185,15 +184,25 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              </div>
 
              {/* 30 DAY GUARANTEE SEAL */}
-             <div className="mt-8 flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                 <div className="flex-shrink-0">
-                    <svg className="w-16 h-16 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954-1.582 1.605 3.192a1 1 0 01-.44 1.355l-2.006 1.102 2.006 1.103a1 1 0 01.44 1.354L14.954 16.67l-3.954-1.582V17a1 1 0 11-2 0v-1.912l-3.954 1.582-1.605-3.192a1 1 0 01.44-1.354l2.006-1.103-2.006-1.102a1 1 0 01-.44-1.355L6.046 4.323 10 5.905V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clipRule="evenodd"/></svg>
-                 </div>
-                 <div>
-                    <h3 className="font-bold text-gray-900 text-lg">30-Day Money-Back Guarantee</h3>
-                    <p className="text-sm text-gray-600">If you don't love it, simply email us within 30 days for a full refund. No questions asked.</p>
-                 </div>
-             </div>
+             {product.checkout.guaranteeBadge ? (
+               <div className="mt-8 flex justify-center w-full">
+                 <img 
+                   src={product.checkout.guaranteeBadge} 
+                   alt="100% Satisfaction Guarantee" 
+                   className="h-32 w-auto object-contain hover:scale-105 transition-transform duration-300" 
+                 />
+               </div>
+             ) : (
+               <div className="mt-8 flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                   <div className="flex-shrink-0">
+                      <svg className="w-16 h-16 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954-1.582 1.605 3.192a1 1 0 01-.44 1.355l-2.006 1.102 2.006 1.103a1 1 0 01.44 1.354L14.954 16.67l-3.954-1.582V17a1 1 0 11-2 0v-1.912l-3.954 1.582-1.605-3.192a1 1 0 01.44-1.354l2.006-1.103-2.006-1.102a1 1 0 01-.44-1.355L6.046 4.323 10 5.905V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clipRule="evenodd"/></svg>
+                   </div>
+                   <div>
+                      <h3 className="font-bold text-gray-900 text-lg">30-Day Money-Back Guarantee</h3>
+                      <p className="text-sm text-gray-600">If you don't love it, simply email us within 30 days for a full refund. No questions asked.</p>
+                   </div>
+               </div>
+             )}
           </div>
           
           {/* SIDEBAR (RIGHT) */}
@@ -222,7 +231,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                  </div>
                  <div className="bg-blue-50 rounded-lg p-4 mb-4">
                     <ul className="space-y-3">
-                      {/* FIX 2: Explicitly type feature and index */}
                       {checkout.features.map((feature: string, i: number) => (
                         <li key={i} className="flex items-start text-sm text-gray-700">
                           <span className="text-blue-500 font-bold mr-3">✓</span> 
