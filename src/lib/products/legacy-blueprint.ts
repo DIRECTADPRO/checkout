@@ -39,7 +39,7 @@ checkout: {
   },
   
 bump: {
-    headline: "ONE-TIME OFFER: Upgrade to the 'Digital Twin' & Auto-Fill Suite",
+    headline: "Upgrade to the 'Digital Twin' & Auto-Fill Suite",
     description: "Don't cramp your hand writing 100+ pages. Get the Fillable PDF + Excel 'Data Vault' to copy-paste passwords and auto-calculate Net Worth in minutes. Finish twice as fast.",
     price: 1700, 
     
