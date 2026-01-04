@@ -17,7 +17,7 @@ export const legacyBlueprint = {
     productName: "The Legacy Blueprint (Red Protocol Edition)",
     
     price: 3700, 
-    image: "/images/legacy-blueprint-cover.png", 
+    image: "https://res.cloudinary.com/dse1cikja/image/upload/v1767485592/BLUEPRINTAsset_3_2x-8_zwfaa9.png", 
     
     // FIX: This empty string is fine now because we made it optional in the other file
     videoEmbedUrl: "", 
