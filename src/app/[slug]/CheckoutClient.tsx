@@ -211,19 +211,26 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* --- THE ULTIMATE GUARANTEE SECTION --- */}
+             {/* --- THE ULTIMATE GUARANTEE SECTION (WITH 3D SEAL) --- */}
              <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
                {/* Background Texture for "Official" Feel */}
                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
                
                <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
-                 {/* 1. The Visual Anchor (Seal) */}
+                 {/* 1. The Visual Anchor (3D Seal or Fallback) */}
                  <div className="flex-shrink-0">
-                   <div className="relative h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 border border-gray-100 shadow-inner">
-                      <svg className="h-10 w-10 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
-                      {/* Gold Accent for Value */}
-                      <div className="absolute inset-0 rounded-full border-2 border-yellow-500/20"></div>
-                   </div>
+                   {product.checkout.guaranteeBadge ? (
+                     <img 
+                       src={product.checkout.guaranteeBadge} 
+                       alt="Satisfaction Guarantee Seal" 
+                       className="h-24 w-auto drop-shadow-xl filter transition-transform duration-300 hover:scale-105 hover:rotate-3" 
+                     />
+                   ) : (
+                     <div className="relative h-20 w-20 flex items-center justify-center rounded-full bg-gray-50 border border-gray-100 shadow-inner">
+                        <svg className="h-10 w-10 text-gray-900" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+                        <div className="absolute inset-0 rounded-full border-2 border-yellow-500/20"></div>
+                     </div>
+                   )}
                  </div>
 
                  {/* 2. The Legal Promise (Copy) */}
