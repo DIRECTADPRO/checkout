@@ -156,40 +156,39 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     <div className="min-h-screen font-sans bg-[#F8F9FA] pb-24 text-gray-900">
       <SocialProofPopup />
 
-      {/* --- WORLD-CLASS HERO SECTION (INTEGRATED) --- */}
-      <section className="w-full bg-white pt-24 pb-20 md:pt-32 md:pb-24 mb-10 border-b border-gray-100">
+      {/* --- HERO SECTION: COMPACT HIGH-CONVERSION MODE --- */}
+      {/* Changed: drastically reduced vertical padding (pt-10 pb-8) to pull content up */}
+      <section className="w-full bg-white pt-10 pb-8 border-b border-gray-100 shadow-sm mb-8">
         <div className="mx-auto max-w-5xl px-6 text-center">
           
-          {/* 1. THE NAVY LOGO */}
-          <div className="mb-12 flex justify-center animate-[fadeIn_0.6s_ease-out]">
+          {/* 1. THE NAVY LOGO - REDUCED SIZE */}
+          {/* Changed: h-12 (approx 48px) instead of h-20. Much tighter. */}
+          <div className="mb-6 flex justify-center animate-[fadeIn_0.6s_ease-out]">
              <img 
                src="https://res.cloudinary.com/dse1cikja/image/upload/v1767569445/BLUEPRINTAsset_6_u1gevt.png" 
                alt="The Legacy Blueprint" 
-               className="h-16 w-auto md:h-20 object-contain" 
+               className="h-12 w-auto object-contain" 
              />
           </div>
 
-          {/* 2. THE HEADLINE (Serif, Navy, with Gold Accent) */}
-          <h1 className="mx-auto max-w-4xl font-serif text-4xl font-bold tracking-tight text-slate-900 md:text-6xl leading-[1.15] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+          {/* 2. THE HEADLINE - REDUCED SIZE, SAME IMPACT */}
+          {/* Changed: text-3xl md:text-4xl. Removed text-6xl to stop the screaming. */}
+          <h1 className="mx-auto max-w-4xl font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
             <span>Your Lawyer Prepared Your Family for the Probate Court.</span>
             
-            <span className="mt-4 block md:mt-6">
+            <span className="mt-2 block">
               But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block">
                 First 48 Hours?
-                <svg className="absolute -bottom-2 left-0 w-full h-2 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
+                <svg className="absolute -bottom-1 left-0 w-full h-1.5 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
               </span>
             </span>
           </h1>
 
-          {/* 3. THE SUBHEAD (Sans-Serif, Grey) */}
-          <p className="mx-auto mt-8 max-w-2xl text-lg text-slate-600 md:text-xl leading-relaxed animate-[fadeIn_1s_ease-out_0.4s_both]">
-            <span className="font-bold text-slate-900">Wills handle the wealth. The Manual handles the chaos.</span> The comprehensive operational system that guides your family through the immediate crisis and the months of logistics that follow.
+          {/* 3. THE SUBHEAD - TIGHTER */}
+          {/* Changed: Reduced top margin (mt-4) and font size (text-base md:text-lg) */}
+          <p className="mx-auto mt-4 max-w-2xl text-base text-slate-600 md:text-lg leading-relaxed animate-[fadeIn_1s_ease-out_0.4s_both]">
+            <span className="font-bold text-slate-900">Wills handle the wealth. The Manual handles the chaos.</span> The comprehensive operational system that guides your family through the immediate crisis.
           </p>
-
-          {/* 4. DIVIDER */}
-          <div className="mt-12 animate-[fadeIn_1.2s_ease-out_0.6s_both]">
-             <div className="mx-auto h-16 w-px bg-gradient-to-b from-slate-200 to-transparent"></div>
-          </div>
 
         </div>
       </section>
