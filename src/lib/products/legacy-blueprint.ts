@@ -18,10 +18,12 @@ export const legacyBlueprint = {
     
     price: 3700, 
     image: "https://res.cloudinary.com/dse1cikja/image/upload/v1767485592/BLUEPRINTAsset_3_2x-8_zwfaa9.png", 
+   
+    // THIS IS THE MISSING LINE THAT MAKES THE SHIELD APPEAR
+    guaranteeBadge: "https://res.cloudinary.com/dse1cikja/image/upload/v1763817716/Badge_b86eiv.png",
     
-    // FIX: This empty string is fine now because we made it optional in the other file
     videoEmbedUrl: "", 
-    
+
     features: [
       "The Red Protocol: Immediate 'Crisis Map' for the First 48 Hours",
       "The Digital Estate: Master Key System for Passwords & 2FA",
