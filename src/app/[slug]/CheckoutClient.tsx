@@ -156,22 +156,43 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     <div className="min-h-screen font-sans bg-[#F8F9FA] pb-24 text-gray-900">
       <SocialProofPopup />
 
-      {/* --- HEADER SECTION --- */}
-      <div className="bg-white border-b border-gray-100 shadow-sm pt-10 pb-12 mb-10">
-        <div className="max-w-3xl mx-auto px-6 text-center">
-            {theme.logoUrl ? (
-              <img src={theme.logoUrl} alt="Logo" className="mx-auto h-16 md:h-20 mb-8 object-contain" />
-            ) : (
-              <div className="text-3xl font-serif font-bold mb-8 tracking-tight">THE LEGACY BLUEPRINT</div>
-            )}
-            <h1 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-4 leading-tight">
-              {checkout.headline}
-            </h1>
-            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              {checkout.subhead}
-            </p>
+      {/* --- WORLD-CLASS HERO SECTION (INTEGRATED) --- */}
+      <section className="w-full bg-white pt-24 pb-20 md:pt-32 md:pb-24 mb-10 border-b border-gray-100">
+        <div className="mx-auto max-w-5xl px-6 text-center">
+          
+          {/* 1. THE NAVY LOGO */}
+          <div className="mb-12 flex justify-center animate-[fadeIn_0.6s_ease-out]">
+             <img 
+               src="https://res.cloudinary.com/dse1cikja/image/upload/v1767569445/BLUEPRINTAsset_6_u1gevt.png" 
+               alt="The Legacy Blueprint" 
+               className="h-16 w-auto md:h-20 object-contain" 
+             />
+          </div>
+
+          {/* 2. THE HEADLINE (Serif, Navy, with Gold Accent) */}
+          <h1 className="mx-auto max-w-4xl font-serif text-4xl font-bold tracking-tight text-slate-900 md:text-6xl leading-[1.15] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            <span>Your Lawyer Prepared Your Family for the Probate Court.</span>
+            
+            <span className="mt-4 block md:mt-6">
+              But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block">
+                First 48 Hours?
+                <svg className="absolute -bottom-2 left-0 w-full h-2 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
+              </span>
+            </span>
+          </h1>
+
+          {/* 3. THE SUBHEAD (Sans-Serif, Grey) */}
+          <p className="mx-auto mt-8 max-w-2xl text-lg text-slate-600 md:text-xl leading-relaxed animate-[fadeIn_1s_ease-out_0.4s_both]">
+            <span className="font-bold text-slate-900">Wills handle the wealth. The Manual handles the chaos.</span> The comprehensive operational system that guides your family through the immediate crisis and the months of logistics that follow.
+          </p>
+
+          {/* 4. DIVIDER */}
+          <div className="mt-12 animate-[fadeIn_1.2s_ease-out_0.6s_both]">
+             <div className="mx-auto h-16 w-px bg-gradient-to-b from-slate-200 to-transparent"></div>
+          </div>
+
         </div>
-      </div>
+      </section>
 
       <div className="max-w-6xl mx-auto px-4 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
@@ -184,11 +205,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 {/* --- FIXED HEADER: NAVY BLUE with GOLD LOCK --- */}
                 <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between font-bold text-sm tracking-wide uppercase">
                    <div className="flex items-center gap-2">
-                      {/* GOLD LOCK ICON: The "Golden Thread" Fix */}
                       <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                       <span>Secure Checkout</span>
                    </div>
-                   {/* Trust Indicator */}
                    <div className="flex items-center gap-1.5 text-[10px] text-gray-400 font-semibold tracking-widest opacity-80">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
                       AES-256
@@ -210,7 +229,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* --- GUARANTEE SECTION --- */}
+             {/* --- GUARANTEE SECTION (WITH 3D SEAL) --- */}
              <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
                <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
