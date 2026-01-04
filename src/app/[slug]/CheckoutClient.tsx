@@ -7,7 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products/index'; 
 import { getFunnelConfig } from '@/lib/funnel-types';
-import '@/styles/checkout-design.css';
+import '@/styles/checkout-design.css'; // We will override most of this with utility classes
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -19,15 +19,11 @@ const SocialProofPopup = () => {
     const recentSales = [
         { name: "Mike T.", loc: "Denver, CO" },
         { name: "Sarah L.", loc: "Austin, TX" },
-        { name: "Jessica R.", loc: "Miami, FL" },
         { name: "David K.", loc: "Seattle, WA" },
-        { name: "Emily W.", loc: "Chicago, IL" },
-        { name: "James P.", loc: "Atlanta, GA" },
-        { name: "Amanda B.", loc: "Phoenix, AZ" },
         { name: "Robert M.", loc: "Nashville, TN" }
     ];
     
-    const times = ["Just now", "2 minutes ago", "5 minutes ago", "12 minutes ago"];
+    const times = ["Just now", "2 minutes ago", "5 minutes ago"];
 
     const cycle = () => {
       const randomSale = recentSales[Math.floor(Math.random() * recentSales.length)];
@@ -49,13 +45,13 @@ const SocialProofPopup = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 bg-white border-l-4 border-green-500 shadow-xl rounded-r-lg p-4 flex items-center gap-3 animate-[slideUp_0.5s_ease-out]" style={{maxWidth: '320px'}}>
-      <div className="bg-green-100 p-2 rounded-full text-green-600">
-        <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+    <div className="fixed bottom-6 left-6 z-50 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-lg p-4 flex items-center gap-4 animate-[slideUp_0.5s_ease-out] max-w-xs">
+      <div className="bg-emerald-50 p-2 rounded-full text-emerald-600">
+        <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </div>
       <div>
-        <p className="text-sm font-bold text-gray-800">{info.name} in {info.location}</p>
-        <p className="text-xs text-gray-500">Verified Purchase • {info.time}</p>
+        <p className="text-sm font-bold text-gray-900">{info.name} in {info.location}</p>
+        <p className="text-xs text-gray-500 font-medium">Verified Owner • {info.time}</p>
       </div>
     </div>
   );
@@ -65,7 +61,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
   const { theme, checkout, bump } = product;
   const productData = checkout;
   
-  // Use the funnelType from the config, or default to digital
   const rawFunnelType = productData.funnelType || 'digital_product';
   const config = getFunnelConfig(rawFunnelType); 
   
@@ -73,23 +68,42 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
   const [amount, setAmount] = useState<number>(checkout.price || 0);
   const [isBumpSelected, setIsBumpSelected] = useState(false);
 
-  // VIDEO LOGIC: Check if embed URL exists
   const videoUrl = productData.videoEmbedUrl;
-  const hasVideo = videoUrl && videoUrl.length > 5; // Simple check for valid string
+  const hasVideo = videoUrl && videoUrl.length > 5;
 
-  // Fix Price Logic
   if (amount !== checkout.price && !isBumpSelected) {
       setAmount(checkout.price);
   }
 
+  // AESTHETIC FIX: Custom Stripe Appearance for "Executive" Look
   const appearance = {
-    theme: 'stripe' as const,
+    theme: 'flat' as const,
     variables: {
-      colorPrimary: theme.accentColor || '#6366f1',
-      colorBackground: '#ffffff', 
-      colorText: '#1f2937',
+      colorPrimary: '#B45309', // Legacy Gold
+      colorBackground: '#F9FAFB', // Light Gray Input Background
+      colorText: '#18181B', // Zinc-900
       borderRadius: '8px',
+      fontFamily: 'ui-sans-serif, system-ui, sans-serif',
+      spacingUnit: '4px',
     },
+    rules: {
+      '.Input': {
+        border: '1px solid #E4E4E7',
+        boxShadow: 'none',
+        padding: '12px',
+        transition: 'border 0.2s ease',
+      },
+      '.Input:focus': {
+        border: '1px solid #B45309', // Gold focus ring
+        boxShadow: '0 0 0 2px rgba(180, 83, 9, 0.1)',
+      },
+      '.Label': {
+        fontWeight: '600',
+        color: '#3F3F46',
+        marginBottom: '6px',
+        fontSize: '14px',
+      }
+    }
   };
 
   const options: StripeElementsOptions = {
@@ -99,14 +113,18 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     appearance,
   };
 
+  // AESTHETIC FIX: Refined Bump Offer Design
   const OrderBumpComponent = (
-    <div className="bg-yellow-50 border-2 border-dashed border-yellow-400 rounded-xl p-4 mt-6">
-      <label className="flex items-start cursor-pointer select-none" htmlFor="bump-offer">
-        <div className="flex h-6 items-center">
+    <div className="relative overflow-hidden bg-amber-50/50 border border-amber-200 rounded-xl p-5 mt-8 transition-all hover:border-amber-300">
+      <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">
+        Recommended
+      </div>
+      <label className="flex items-start cursor-pointer select-none gap-4" htmlFor="bump-offer">
+        <div className="flex-shrink-0 mt-1">
           <input 
             type="checkbox" 
             id="bump-offer" 
-            className="h-5 w-5 rounded border-gray-300 text-indigo-600 focus:ring-indigo-600"
+            className="h-5 w-5 rounded border-amber-300 text-amber-600 focus:ring-amber-500 cursor-pointer"
             checked={isBumpSelected}
             onChange={(e) => {
               setIsBumpSelected(e.target.checked);
@@ -114,59 +132,70 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
             }}
           />
         </div>
-        <div className="ml-3 text-sm">
-          <span className="block text-base font-bold text-gray-900 mb-1">
-             <span className="text-red-600 uppercase mr-1">ONE-TIME OFFER:</span> 
+        <div className="flex-1">
+          <span className="block text-base font-bold text-gray-900 mb-1 leading-snug">
+             <span className="text-red-700 uppercase mr-1.5 font-extrabold">ONE-TIME OFFER:</span> 
              {bump.headline}
           </span>
-          <p className="text-gray-600 leading-relaxed mb-2">
+          <p className="text-sm text-gray-600 leading-relaxed mb-2">
              {bump.description}
           </p>
-          <span className="text-green-700 font-bold text-base">
-             Add for just ${(bump.price / 100).toFixed(2)}
-          </span>
+          <p className="text-amber-700 font-bold text-sm flex items-center gap-1">
+             Add to order for just <span className="underline decoration-amber-300 decoration-2">${(bump.price / 100).toFixed(2)}</span>
+          </p>
         </div>
       </label>
     </div>
   );
 
   return (
-    <div className="min-h-screen font-sans text-gray-900 bg-gray-50 pb-20">
+    <div className="min-h-screen font-sans bg-[#F8F9FA] pb-24 text-gray-900">
       <SocialProofPopup />
 
-      <div className="max-w-6xl mx-auto px-4 pt-10">
-        
-        {/* HEADER */}
-        <div className="text-center mb-10">
+      {/* HEADER SECTION */}
+      <div className="bg-white border-b border-gray-100 shadow-sm pt-8 pb-10 mb-10">
+        <div className="max-w-4xl mx-auto px-4 text-center">
             {theme.logoUrl ? (
-              <img src={theme.logoUrl} alt="Logo" className="mx-auto h-12 mb-6" />
+              <img src={theme.logoUrl} alt="Logo" className="mx-auto h-10 mb-6 object-contain" />
             ) : (
-              <div className="text-2xl font-bold mb-6">LOGO</div>
+              <div className="text-2xl font-serif font-bold mb-6 tracking-tight">THE LEGACY BLUEPRINT</div>
             )}
-            <h1 className="text-3xl md:text-5xl font-extrabold text-gray-900 mb-4 tracking-tight">
+            <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-3 leading-tight tracking-tight">
               {checkout.headline}
             </h1>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-500 max-w-2xl mx-auto font-medium">
               {checkout.subhead}
             </p>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12">
+      <div className="max-w-6xl mx-auto px-4 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
           
-          {/* MAIN CHECKOUT (LEFT) */}
-          <div className="lg:col-span-8">
-             <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
-                <div className="bg-gray-50 px-8 py-4 border-b border-gray-200 flex items-center justify-between">
-                   <div className="flex items-center gap-2">
-                      <span className="bg-green-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold">1</span>
-                      <h2 className="font-bold text-gray-800">Contact & Shipping</h2>
+          {/* LEFT COLUMN: CHECKOUT FORM */}
+          <div className="lg:col-span-7 xl:col-span-8">
+             {/* Main Card: Glass & Steel Effect */}
+             <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
+                
+                {/* Progress Header */}
+                <div className="bg-gray-50/80 px-8 py-5 border-b border-gray-100 flex items-center justify-between backdrop-blur-sm">
+                   <div className="flex items-center gap-3">
+                      <div className="bg-gray-900 text-white rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-sm">1</div>
+                      <h2 className="font-bold text-gray-800 tracking-tight">Secure Checkout</h2>
                    </div>
-                   <div className="text-xs text-gray-400 font-medium">Step 1 of 2</div>
+                   <div className="flex items-center gap-2 text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                      <svg className="w-3 h-3 text-green-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"/></svg>
+                      AES-256 Encrypted
+                   </div>
                 </div>
 
-                <div className="p-6 md:p-8">
-                    <div className="inline-block bg-indigo-600 text-white px-4 py-1.5 rounded-md text-sm font-bold uppercase tracking-wide mb-6 shadow-sm">
-                       {config.requiresShipping ? 'Where Should We Ship It?' : 'Complete Your Order'}
+                <div className="p-6 md:p-10">
+                    <div className="mb-8">
+                       <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
+                          {config.requiresShipping ? 'Shipping Information' : 'Contact Information'}
+                       </h3>
+                       {/* This empty div is just a spacer for visual rhythm */}
+                       <div className="h-px w-full bg-gray-100 mb-6"></div>
                     </div>
 
                     <Elements options={options} stripe={stripePromise}>
@@ -183,117 +212,124 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* 30 DAY GUARANTEE SEAL */}
+             {/* Guarantee Seal (Refined Layout) */}
              {product.checkout.guaranteeBadge ? (
-               <div className="mt-8 flex justify-center w-full">
+               <div className="mt-10 flex justify-center w-full opacity-90 hover:opacity-100 transition-opacity">
                  <img 
                    src={product.checkout.guaranteeBadge} 
                    alt="100% Satisfaction Guarantee" 
-                   className="h-32 w-auto object-contain hover:scale-105 transition-transform duration-300" 
+                   className="h-28 w-auto object-contain" 
                  />
                </div>
              ) : (
-               <div className="mt-8 flex items-center gap-4 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
-                   <div className="flex-shrink-0">
-                      <svg className="w-16 h-16 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 2a1 1 0 011 1v1.323l3.954-1.582 1.605 3.192a1 1 0 01-.44 1.355l-2.006 1.102 2.006 1.103a1 1 0 01.44 1.354L14.954 16.67l-3.954-1.582V17a1 1 0 11-2 0v-1.912l-3.954 1.582-1.605-3.192a1 1 0 01.44-1.354l2.006-1.103-2.006-1.102a1 1 0 01-.44-1.355L6.046 4.323 10 5.905V3a1 1 0 011-1zm0 4a4 4 0 100 8 4 4 0 000-8z" clipRule="evenodd"/></svg>
+               <div className="mt-8 flex items-start gap-5 bg-white p-6 rounded-xl border border-gray-200 shadow-sm">
+                   <div className="flex-shrink-0 bg-yellow-50 p-3 rounded-full">
+                      <svg className="w-8 h-8 text-yellow-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                    </div>
                    <div>
-                      <h3 className="font-bold text-gray-900 text-lg">30-Day Money-Back Guarantee</h3>
-                      <p className="text-sm text-gray-600">If you don't love it, simply email us within 30 days for a full refund. No questions asked.</p>
+                      <h3 className="font-bold text-gray-900 text-lg mb-1">30-Day Money-Back Guarantee</h3>
+                      <p className="text-sm text-gray-600 leading-relaxed">If this system doesn't give you complete peace of mind, simply email us within 30 days for a full refund. No questions asked.</p>
                    </div>
                </div>
              )}
           </div>
           
-          {/* SIDEBAR (RIGHT) */}
-          <div className="lg:col-span-4 space-y-6">
+          {/* RIGHT COLUMN: SIDEBAR */}
+          <div className="lg:col-span-5 xl:col-span-4 space-y-8">
             
-            {/* WHAT YOU GET */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">What You Get</div>
+            {/* PRODUCT CARD */}
+            <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden sticky top-6">
+              <div className="bg-gray-900 text-white px-6 py-4 font-bold text-sm tracking-wide uppercase flex justify-between items-center">
+                 <span>Your Order</span>
+                 <svg className="w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>
+              </div>
+              
               <div className="p-6">
-                 {hasVideo ? (
-                    <div className="mb-6 rounded-lg overflow-hidden shadow-md aspect-video border border-gray-200 relative bg-black">
-                        <iframe 
-                          src={videoUrl} 
-                          className="absolute top-0 left-0 w-full h-full" 
-                          allow="autoplay; encrypted-media" 
-                          allowFullScreen 
-                          title="Product Video"
-                        />
-                    </div>
-                 ) : (
-                    <img src={checkout.image} alt={checkout.productName} className="w-full rounded-lg mb-6 shadow-sm border border-gray-100" />
-                 )}
-                 <div className="mb-6">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">{checkout.productName}</h3>
-                    <p className="text-sm text-gray-500 font-medium">{config.fulfillmentMode === 'physical' ? 'Physical Package' : 'Instant Digital Access'}</p>
+                 {/* Product Image - Full Width Bleed Effect */}
+                 <div className="-mx-6 -mt-6 mb-6 bg-gray-50 border-b border-gray-100">
+                    {hasVideo ? (
+                        <div className="aspect-video w-full relative">
+                            <iframe 
+                              src={videoUrl} 
+                              className="absolute inset-0 w-full h-full" 
+                              allow="autoplay; encrypted-media" 
+                              allowFullScreen 
+                            />
+                        </div>
+                    ) : (
+                        <img src={checkout.image} alt={checkout.productName} className="w-full h-auto object-cover" />
+                    )}
                  </div>
-                 <div className="bg-blue-50 rounded-lg p-4 mb-4">
+
+                 <div className="mb-6">
+                    <h3 className="text-xl font-bold text-gray-900 mb-1 leading-tight">{checkout.productName}</h3>
+                    <p className="text-sm text-green-600 font-bold flex items-center gap-1">
+                        <span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
+                        {config.fulfillmentMode === 'physical' ? 'In Stock - Ships Tomorrow' : 'Instant Digital Access'}
+                    </p>
+                 </div>
+
+                 {/* Feature List - Styled */}
+                 <div className="bg-blue-50/50 rounded-lg p-5 mb-6 border border-blue-100">
                     <ul className="space-y-3">
                       {checkout.features.map((feature: string, i: number) => (
                         <li key={i} className="flex items-start text-sm text-gray-700">
-                          <span className="text-blue-500 font-bold mr-3">✓</span> 
-                          <span>{feature}</span>
+                          <svg className="w-5 h-5 text-blue-600 mr-3 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
+                          <span className="font-medium">{feature}</span>
                         </li>
                       ))}
                     </ul>
                  </div>
-              </div>
-            </div>
-            
-            {/* ORDER SUMMARY */}
-            <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-              <div className="bg-[#6366f1] text-white px-6 py-3 font-bold text-lg">Order Summary</div>
-              <div className="p-6">
-                 <div className="space-y-3">
+
+                 {/* Order Summary Table */}
+                 <div className="space-y-3 pt-6 border-t border-gray-100">
                     <div className="flex justify-between text-sm text-gray-600">
-                        <span>Item Price</span>
-                        <span>${(checkout.price / 100).toFixed(2)}</span>
+                        <span>The Legacy Blueprint</span>
+                        <span className="font-medium text-gray-900">${(checkout.price / 100).toFixed(2)}</span>
                     </div>
                     {isBumpSelected && (
-                        <div className="flex justify-between text-sm text-green-700 font-medium">
-                            <span>{bump.headline} (Add-on)</span>
+                        <div className="flex justify-between text-sm text-amber-700 font-medium">
+                            <span>Digital Twin Upgrade</span>
                             <span>${(bump.price / 100).toFixed(2)}</span>
                         </div>
                     )}
                     <div className="flex justify-between text-sm text-gray-600">
                         <span>Shipping & Handling</span>
-                        <span className="font-bold text-gray-900">$0.00</span>
+                        <span className="font-medium text-gray-900">FREE</span>
                     </div>
-                    <div className="h-px bg-gray-200 my-2"></div>
-                    <div className="flex justify-between text-xl font-extrabold text-gray-900">
+                    
+                    <div className="flex justify-between text-xl font-bold text-gray-900 pt-4 border-t border-dashed border-gray-200 mt-4">
                         <span>Total</span>
-                        <span className="text-[#6366f1]">${(amount / 100).toFixed(2)}</span>
+                        <span>${(amount / 100).toFixed(2)}</span>
                     </div>
                  </div>
               </div>
             </div>
 
-            {/* FAQs */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-               <h4 className="font-bold text-gray-900 mb-4">Frequently Asked Questions</h4>
+            {/* Simple FAQ (Visual cleanup) */}
+            <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
+               <h4 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide text-gray-400">Common Questions</h4>
                <div className="space-y-4">
                   <details className="group">
-                     <summary className="flex justify-between items-center font-medium cursor-pointer list-none text-sm text-gray-700">
+                     <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-sm text-gray-800 hover:text-gray-600">
                         <span>When will this arrive?</span>
-                        <span className="transition group-open:rotate-180">
-                           <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                        <span className="transition-transform group-open:rotate-180">
+                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                         </span>
                      </summary>
-                     <p className="text-gray-600 text-xs mt-3 group-open:animate-fadeIn">
-                        We deliver instantly for digital items, and ship within 24 hours for physical goods.
+                     <p className="text-gray-600 text-sm mt-2 leading-relaxed pl-1">
+                        We ship physical binders within 24 hours. You will receive a tracking number immediately via email.
                      </p>
                   </details>
                   <details className="group">
-                     <summary className="flex justify-between items-center font-medium cursor-pointer list-none text-sm text-gray-700">
-                        <span>Is there a refund policy?</span>
-                        <span className="transition group-open:rotate-180">
-                           <svg fill="none" height="24" shapeRendering="geometricPrecision" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" viewBox="0 0 24 24" width="24"><path d="M6 9l6 6 6-6"></path></svg>
+                     <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-sm text-gray-800 hover:text-gray-600">
+                        <span>Is my data secure?</span>
+                        <span className="transition-transform group-open:rotate-180">
+                           <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                         </span>
                      </summary>
-                     <p className="text-gray-600 text-xs mt-3 group-open:animate-fadeIn">
-                        Yes! We offer a no-questions-asked 30-day money-back guarantee.
+                     <p className="text-gray-600 text-sm mt-2 leading-relaxed pl-1">
+                        Absolutely. We use bank-level AES-256 encryption. We do not store your credit card information.
                      </p>
                   </details>
                </div>

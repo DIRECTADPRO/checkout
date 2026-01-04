@@ -1,3 +1,4 @@
+/* FILE: src/components/CheckoutForm.tsx */
 'use client';
 
 import React, { useState } from 'react';
@@ -52,60 +53,73 @@ export default function CheckoutForm({
   };
 
   return (
-    <form id="payment-form" onSubmit={handleSubmit} className="w-full space-y-6">
+    <form id="payment-form" onSubmit={handleSubmit} className="w-full">
       
-      {/* 1. SHIPPING */}
+      {/* 1. SHIPPING - Animation smoothed */}
       {funnelConfig.requiresShipping && (
-         <div className="mb-5 animate-[fadeIn_0.5s_ease-in-out]">
-             <h3 className="text-base font-semibold text-gray-900 mb-3">
-                Shipping Information
+         <div className="mb-6 animate-[fadeIn_0.4s_ease-out]">
+             {/* Using a label style that matches Stripe's internal labels */}
+             <h3 className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+                Shipping Address
              </h3>
              <AddressElement options={{ mode: 'shipping' }} />
          </div>
       )}
 
-      {/* 2. PAYMENT */}
-      <div className="mb-6 rounded-md bg-white">
+      {/* 2. PAYMENT - Container styling handled by Stripe Appearance in Parent, but we add margin */}
+      <div className="mb-8">
         <PaymentElement id="payment-element" options={{layout: "tabs"}} />
       </div>
 
-      {/* 3. ORDER BUMP */}
+      {/* 3. ORDER BUMP (Injected from Parent) */}
       {children}
 
-      {/* 4. BUTTON - FIXED FOR TAILWIND V4 */}
+      {/* 4. PREMIUM CTA BUTTON */}
       <button 
         disabled={isLoading || !stripe || !elements} 
         id="submit"
         className={`
-            w-full group relative flex justify-center items-center
-            py-4 px-6 rounded-lg text-white font-bold text-lg
-            /* v4 CHANGE: 'bg-gradient-to-r' IS NOW 'bg-linear-to-r' */
-            bg-gradient-to-r from-amber-500 to-orange-600 
-            hover:from-amber-400 hover:to-orange-500
-            shadow-lg hover:shadow-xl hover:-translate-y-0.5 
-            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500
-            transition-all duration-200 ease-in-out
-            disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none
+            w-full group relative flex justify-center items-center mt-6
+            py-4 px-6 rounded-lg text-white font-bold text-xl tracking-wide
+            /* THE FIX: Executive Gradient (Gold -> Burnt Orange -> Red) */
+            bg-gradient-to-r from-yellow-600 via-orange-600 to-red-700
+            hover:from-yellow-500 hover:via-orange-500 hover:to-red-600
+            shadow-[0_4px_14px_0_rgba(194,65,12,0.39)] 
+            hover:shadow-[0_6px_20px_rgba(194,65,12,0.23)] 
+            hover:-translate-y-0.5 
+            focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500
+            transition-all duration-300 ease-out
+            disabled:opacity-70 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none
         `}
       >
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-3 relative z-10">
           {isLoading ? (
-            <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
+            <>
+              <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <span>Processing Securely...</span>
+            </>
           ) : (
             <>
-              <svg className="w-5 h-5 text-orange-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+              <svg className="w-5 h-5 text-yellow-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
               {customButtonText}
             </>
           )}
         </span>
       </button>
 
+      {/* Security Footnote */}
+      <div className="mt-4 flex justify-center items-center gap-2 text-xs text-gray-400">
+        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-2 16l-4-4 1.41-1.41L10 14.17l6.59-6.59L18 9l-8 8z"/></svg>
+        <span>Guaranteed Safe & Secure Checkout</span>
+      </div>
+
       {message && (
-        <div className="mt-4 p-3 bg-red-50 border-l-4 border-red-500 rounded-r shadow-sm">
-            <p className="text-sm text-red-700">{message}</p>
+        <div className="mt-4 p-4 bg-red-50 border border-red-100 rounded-lg flex items-start gap-3 animate-[fadeIn_0.3s_ease-out]">
+            <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+            <p className="text-sm text-red-800 font-medium">{message}</p>
         </div>
       )}
     </form>
