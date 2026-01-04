@@ -151,18 +151,23 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     <div className="min-h-screen font-sans bg-[#F8F9FA] pb-24 text-gray-900">
       <SocialProofPopup />
 
-      {/* HEADER SECTION */}
-      <div className="bg-white border-b border-gray-100 shadow-sm pt-8 pb-10 mb-10">
-        <div className="max-w-4xl mx-auto px-4 text-center">
+      {/* --- HEADER SECTION: FIXED PROPORTIONS --- */}
+      <div className="bg-white border-b border-gray-100 shadow-sm pt-10 pb-12 mb-10">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+            {/* 1. Logo: Increased Size (h-10 -> h-16) for Authority */}
             {theme.logoUrl ? (
-              <img src={theme.logoUrl} alt="Logo" className="mx-auto h-10 mb-6 object-contain" />
+              <img src={theme.logoUrl} alt="Logo" className="mx-auto h-16 md:h-20 mb-8 object-contain" />
             ) : (
-              <div className="text-2xl font-serif font-bold mb-6 tracking-tight">THE LEGACY BLUEPRINT</div>
+              <div className="text-3xl font-serif font-bold mb-8 tracking-tight">THE LEGACY BLUEPRINT</div>
             )}
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-3 leading-tight tracking-tight">
+            
+            {/* 2. Headline: Reduced Size (4xl -> 3xl) to handle long copy elegantly */}
+            <h1 className="text-2xl md:text-3xl font-serif font-bold text-gray-900 mb-4 leading-tight">
               {checkout.headline}
             </h1>
-            <p className="text-lg text-gray-500 max-w-2xl mx-auto font-medium">
+            
+            {/* 3. Subhead: Better max-width and color for contrast */}
+            <p className="text-base md:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
               {checkout.subhead}
             </p>
         </div>
@@ -173,7 +178,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           
           {/* LEFT COLUMN: CHECKOUT FORM */}
           <div className="lg:col-span-7 xl:col-span-8">
-             {/* Main Card: Glass & Steel Effect */}
+             {/* Main Card */}
              <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 
                 {/* Progress Header */}
@@ -193,7 +198,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                        <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
                           {config.requiresShipping ? 'Shipping Information' : 'Contact Information'}
                        </h3>
-                       {/* This empty div is just a spacer for visual rhythm */}
                        <div className="h-px w-full bg-gray-100 mb-6"></div>
                     </div>
 
@@ -213,7 +217,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
              {/* --- THE ULTIMATE GUARANTEE SECTION (WITH 3D SEAL) --- */}
              <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
-               {/* Background Texture for "Official" Feel */}
+               {/* Background Texture */}
                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
                
                <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
@@ -271,7 +275,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               </div>
               
               <div className="p-6">
-                 {/* Product Image - Full Width Bleed Effect */}
+                 {/* Product Image */}
                  <div className="-mx-6 -mt-6 mb-6 bg-gray-50 border-b border-gray-100">
                     {hasVideo ? (
                         <div className="aspect-video w-full relative">
