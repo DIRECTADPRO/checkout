@@ -7,7 +7,7 @@ import { Elements } from '@stripe/react-stripe-js';
 import CheckoutForm from '@/components/CheckoutForm';
 import { ProductConfig } from '@/lib/products/index'; 
 import { getFunnelConfig } from '@/lib/funnel-types';
-import '@/styles/checkout-design.css'; // We will override most of this with utility classes
+import '@/styles/checkout-design.css';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
@@ -113,7 +113,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     appearance,
   };
 
-  // AESTHETIC FIX: Refined Bump Offer Design
   const OrderBumpComponent = (
     <div className="relative overflow-hidden bg-amber-50/50 border border-amber-200 rounded-xl p-5 mt-8 transition-all hover:border-amber-300">
       <div className="absolute top-0 right-0 bg-amber-100 text-amber-800 text-[10px] font-bold px-2 py-1 rounded-bl-lg uppercase tracking-wider">
@@ -212,7 +211,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* Guarantee Seal (Refined Layout) */}
+             {/* Guarantee Seal */}
              {product.checkout.guaranteeBadge ? (
                <div className="mt-10 flex justify-center w-full opacity-90 hover:opacity-100 transition-opacity">
                  <img 
@@ -269,7 +268,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                     </p>
                  </div>
 
-                 {/* Feature List - Styled */}
+                 {/* Feature List */}
                  <div className="bg-blue-50/50 rounded-lg p-5 mb-6 border border-blue-100">
                     <ul className="space-y-3">
                       {checkout.features.map((feature: string, i: number) => (
@@ -306,9 +305,9 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
               </div>
             </div>
 
-            {/* Simple FAQ (Visual cleanup) */}
+            {/* Simple FAQ - FIXED CONFLICT HERE */}
             <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
-               <h4 className="font-bold text-gray-900 mb-4 text-sm uppercase tracking-wide text-gray-400">Common Questions</h4>
+               <h4 className="font-bold text-gray-500 mb-4 text-sm uppercase tracking-wide">Common Questions</h4>
                <div className="space-y-4">
                   <details className="group">
                      <summary className="flex justify-between items-center font-semibold cursor-pointer list-none text-sm text-gray-800 hover:text-gray-600">
