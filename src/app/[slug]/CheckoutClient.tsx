@@ -11,7 +11,7 @@ import '@/styles/checkout-design.css';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-// --- 100 US-ONLY VERIFIED SALES DATA ---
+// ... (SALES_DATA and Time Logic remain the same) ...
 const SALES_DATA = [
   { name: "James L.", loc: "Austin, TX" }, { name: "Mary S.", loc: "Denver, CO" }, { name: "Robert M.", loc: "Nashville, TN" }, { name: "Patricia J.", loc: "Seattle, WA" },
   { name: "John D.", loc: "Miami, FL" }, { name: "Jennifer A.", loc: "Chicago, IL" }, { name: "Michael B.", loc: "Phoenix, AZ" }, { name: "Linda W.", loc: "Columbus, OH" },
@@ -40,27 +40,22 @@ const SALES_DATA = [
   { name: "Henry N.", loc: "Grand Rapids, MI" }, { name: "Diane M.", loc: "Huntsville, AL" }
 ];
 
-// --- TIME GENERATOR (0 Minutes to 28 Days) ---
 const getTimeAgo = () => {
   const r = Math.random();
-  // 20% "Hot" (Minutes)
   if (r < 0.2) {
     const mins = Math.floor(Math.random() * 59) + 1;
     return `${mins} ${mins === 1 ? 'minute' : 'minutes'} ago`;
   } 
-  // 30% "Warm" (Hours)
   else if (r < 0.5) {
     const hours = Math.floor(Math.random() * 23) + 1;
     return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
   }
-  // 30% "Established" (Days)
   else if (r < 0.8) {
     const days = Math.floor(Math.random() * 6) + 1;
     return `${days} ${days === 1 ? 'day' : 'days'} ago`;
   }
-  // 20% "Legacy" (Weeks - up to 4)
   else {
-    const weeks = Math.floor(Math.random() * 3) + 1; // 1 to 3 weeks
+    const weeks = Math.floor(Math.random() * 3) + 1; 
     return `${weeks} ${weeks === 1 ? 'week' : 'weeks'} ago`;
   }
 };
@@ -70,9 +65,7 @@ const SocialProofPopup = () => {
   const [data, setData] = useState({ name: "", loc: "", time: "" });
   const [queue, setQueue] = useState<typeof SALES_DATA>([]);
 
-  // Initialize and Shuffle Data
   useEffect(() => {
-    // Fisher-Yates Shuffle
     const shuffled = [...SALES_DATA];
     for (let i = shuffled.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -83,34 +76,20 @@ const SocialProofPopup = () => {
 
   useEffect(() => {
     if (queue.length === 0) return;
-
     let currentIndex = 0;
-
     const cycle = () => {
-      // Pick next person in the shuffled queue
       const person = queue[currentIndex];
-      
       setData({
         name: person.name,
         loc: person.loc,
-        time: getTimeAgo() // Generate dynamic time
+        time: getTimeAgo() 
       });
-      
       setVisible(true);
-      
-      // Hide after 5 seconds
       setTimeout(() => setVisible(false), 5000); 
-
-      // Advance index, loop back if at end
       currentIndex = (currentIndex + 1) % queue.length;
     };
-
-    // First popup after 4 seconds
     const initialTimer = setTimeout(cycle, 4000);
-    
-    // Then every 15 seconds
     const intervalTimer = setInterval(cycle, 15000);
-
     return () => {
       clearTimeout(initialTimer);
       clearInterval(intervalTimer);
@@ -231,7 +210,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
     <div className="min-h-screen font-sans bg-[#F8F9FA] pb-24 text-gray-900">
       <SocialProofPopup />
 
-      {/* --- HERO SECTION: COMPACT HIGH-CONVERSION MODE --- */}
+      {/* --- HERO SECTION --- */}
       <section className="w-full bg-white pt-10 pb-8 border-b border-gray-100 shadow-sm mb-8">
         <div className="mx-auto max-w-5xl px-6 text-center">
           
@@ -244,12 +223,13 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              />
           </div>
 
-          {/* 2. THE HEADLINE */}
+          {/* 2. THE HEADLINE: ORPHAN FIX */}
+          {/* Added whitespace-nowrap span to "First 48 Hours?" to keep it together */}
           <h1 className="mx-auto max-w-4xl font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
             <span>Your Lawyer Prepared Your Family for the Probate Court.</span>
             
             <span className="mt-2 block">
-              But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block">
+              But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block whitespace-nowrap">
                 First 48 Hours?
                 <svg className="absolute -bottom-1 left-0 w-full h-1.5 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
               </span>
@@ -272,7 +252,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              {/* Main Card */}
              <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 
-                {/* --- FIXED HEADER: NAVY BLUE with GOLD LOCK --- */}
+                {/* --- FIXED HEADER --- */}
                 <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between font-bold text-sm tracking-wide uppercase">
                    <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>

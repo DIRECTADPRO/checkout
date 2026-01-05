@@ -56,24 +56,24 @@ export default function CheckoutForm({
   return (
     <form id="payment-form" onSubmit={handleSubmit} className="w-full">
       
-      {/* --- BONUS BANNER --- */}
+      {/* --- BONUS BANNER: FIXED COPY --- */}
+      {/* Changed "Digital Twin" (Paid) to "Executor's Checklist" (Free) to avoid conflict */}
       <div className="mb-8 bg-amber-50 border border-amber-100 rounded-lg p-4 flex items-start gap-3">
          <div className="flex-shrink-0 mt-0.5">
             <div className="w-5 h-5 rounded-full bg-amber-200 flex items-center justify-center text-amber-700 text-xs font-bold">!</div>
          </div>
          <div>
             <h4 className="text-sm font-bold text-gray-900 leading-none mb-1">
-               Where should we send your FREE Bonuses?
+               Where should we send your FREE Bonus?
             </h4>
             <p className="text-xs text-gray-600">
-               Enter your best email address below to instantly unlock the "Digital Twin" templates.
+               Enter your best email address to instantly unlock the <strong>"Executor's 15-Minute Checklist"</strong>.
             </p>
          </div>
       </div>
 
       {/* 1. CONTACT INFORMATION */}
       <div className="mb-8">
-         {/* FIX: Increased size (text-lg), Bold weight, Removed margin-left (ml-1) for perfect alignment */}
          <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
             Contact Information
          </h3>
@@ -95,7 +95,6 @@ export default function CheckoutForm({
 
       {/* 3. PAYMENT DETAILS */}
       <div className="mb-8">
-        {/* FIX: Matching Hierarchy - Large, Bold, Aligned */}
         <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
             Payment Details
         </h3>
