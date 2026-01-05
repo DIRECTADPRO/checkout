@@ -28,10 +28,6 @@ export default function CheckoutForm({
   
   const stripe = useStripe();
   const elements = useElements();
-  
-  // CAPTURE THE NAME MANUALLY (For Social Proof & Stripe Record)
-  const [name, setName] = useState('');
-  
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,15 +37,13 @@ export default function CheckoutForm({
 
     setIsLoading(true);
 
+    // Note: We no longer need to pass 'name' manually. 
+    // The AddressElement automatically attaches the Billing Details (Name, Phone, Address) 
+    // to the PaymentIntent.
     const { error } = await stripe.confirmPayment({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/success`,
-        payment_method_data: {
-            billing_details: {
-                name: name, // PASS THE NAME TO STRIPE
-            }
-        }
       },
     });
 
@@ -65,37 +59,25 @@ export default function CheckoutForm({
   return (
     <form id="payment-form" onSubmit={handleSubmit} className="w-full">
       
-      {/* 1. CUSTOMER INFORMATION (Email & Name) */}
+      {/* 1. CUSTOMER INFORMATION (Email Only) */}
       <div className="mb-8 mt-2">
          <h3 className="block text-lg font-bold text-gray-900 mb-4 tracking-tight">
             Customer Information
          </h3>
          
-         {/* EMAIL (Stripe Link) */}
+         {/* EMAIL */}
          <div className="mb-4">
-             <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
+             {/* ALIGNMENT FIX: Removed ml-1 to match Stripe's flush alignment */}
+             <label className="block text-sm font-semibold text-gray-700 mb-1.5">Email Address</label>
              <LinkAuthenticationElement 
                 id="link-authentication-element"
                 options={{ defaultValues: { email: '' } }} 
              />
          </div>
-
-         {/* FULL NAME (Custom Input) */}
-         <div className="mb-2">
-            <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Full Name</label>
-            <input 
-                id="fullName"
-                type="text" 
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="John Doe"
-                required
-                className="w-full p-3 bg-[#F9FAFB] border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all outline-none font-sans text-[16px]"
-            />
-         </div>
+         {/* REMOVED MANUAL NAME INPUT TO FIX DUPLICATION */}
       </div>
 
-      {/* 2. ADDRESS & PHONE (Billing or Shipping) */}
+      {/* 2. ADDRESS BLOCK (Handles Name, Address, AND Phone) */}
       <div className="mb-8 animate-[fadeIn_0.4s_ease-out]">
           <h3 className="block text-lg font-bold text-gray-900 mb-4 tracking-tight">
              {funnelConfig.requiresShipping ? 'Shipping Address' : 'Billing Address'}
@@ -103,8 +85,9 @@ export default function CheckoutForm({
           <AddressElement 
              options={{ 
                  mode: funnelConfig.requiresShipping ? 'shipping' : 'billing',
-                 // ENABLE PHONE NUMBER COLLECTION
-                 fields: { phone: 'always' }
+                 // THIS ADDS THE PHONE FIELD AND MAKES IT REQUIRED
+                 fields: { phone: 'always' },
+                 validation: { phone: { required: 'always' } }
              }} 
           />
       </div>
