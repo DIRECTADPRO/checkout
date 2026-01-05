@@ -5,7 +5,7 @@ import React, { useState } from 'react';
 import { 
   PaymentElement, 
   AddressElement,
-  LinkAuthenticationElement, // NEW: Standard Email Capture
+  LinkAuthenticationElement, 
   useStripe, 
   useElements 
 } from '@stripe/react-stripe-js';
@@ -56,54 +56,62 @@ export default function CheckoutForm({
   return (
     <form id="payment-form" onSubmit={handleSubmit} className="w-full">
       
-      {/* 1. CONTACT INFO (EMAIL) - NEW SECTION */}
-      <div className="mb-6">
-         <div className="flex justify-between items-end mb-1.5 ml-1">
-            <h3 className="block text-sm font-semibold text-gray-700">
-                Contact Information
-            </h3>
-            {/* THE "EMAIL BONUS" HOOK */}
-            <span className="text-xs font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-100">
-               🎁 Free Bonus sent to this email
-            </span>
+      {/* --- BONUS BANNER --- */}
+      <div className="mb-8 bg-amber-50 border border-amber-100 rounded-lg p-4 flex items-start gap-3">
+         <div className="flex-shrink-0 mt-0.5">
+            <div className="w-5 h-5 rounded-full bg-amber-200 flex items-center justify-center text-amber-700 text-xs font-bold">!</div>
          </div>
-         
-         {/* Stripe's Built-in Email Field (Handles Validation & Link) */}
+         <div>
+            <h4 className="text-sm font-bold text-gray-900 leading-none mb-1">
+               Where should we send your FREE Bonuses?
+            </h4>
+            <p className="text-xs text-gray-600">
+               Enter your best email address below to instantly unlock the "Digital Twin" templates.
+            </p>
+         </div>
+      </div>
+
+      {/* 1. CONTACT INFORMATION */}
+      <div className="mb-8">
+         {/* FIX: Increased size (text-lg), Bold weight, Removed margin-left (ml-1) for perfect alignment */}
+         <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
+            Contact Information
+         </h3>
          <LinkAuthenticationElement 
             id="link-authentication-element"
-            options={{ defaultValues: { email: '' } }} // Start empty
+            options={{ defaultValues: { email: '' } }} 
          />
       </div>
 
       {/* 2. SHIPPING (Conditional) */}
       {funnelConfig.requiresShipping && (
-         <div className="mb-6 animate-[fadeIn_0.4s_ease-out]">
-             <h3 className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+         <div className="mb-8 animate-[fadeIn_0.4s_ease-out]">
+             <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
                 Shipping Address
              </h3>
              <AddressElement options={{ mode: 'shipping' }} />
          </div>
       )}
 
-      {/* 3. PAYMENT */}
+      {/* 3. PAYMENT DETAILS */}
       <div className="mb-8">
-        <h3 className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">
+        {/* FIX: Matching Hierarchy - Large, Bold, Aligned */}
+        <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
             Payment Details
         </h3>
         <PaymentElement id="payment-element" options={{layout: "tabs"}} />
       </div>
 
-      {/* 4. ORDER BUMP (Injected from Parent) */}
+      {/* 4. ORDER BUMP */}
       {children}
 
-      {/* 5. PREMIUM CTA BUTTON */}
+      {/* 5. CTA BUTTON */}
       <button 
         disabled={isLoading || !stripe || !elements} 
         id="submit"
         className={`
             w-full group relative flex justify-center items-center mt-6
             py-4 px-6 rounded-lg text-white font-bold text-xl tracking-wide
-            /* Executive Gradient (Gold -> Burnt Orange -> Red) */
             bg-gradient-to-r from-yellow-600 via-orange-600 to-red-700
             hover:from-yellow-500 hover:via-orange-500 hover:to-red-600
             shadow-[0_4px_14px_0_rgba(194,65,12,0.39)] 
