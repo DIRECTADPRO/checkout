@@ -129,8 +129,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       setAmount(checkout.price);
   }
 
-  // --- MOBILE OPTIMIZATION: INPUT FONT SIZE 16px ---
-  // This prevents iOS from zooming in when the user taps an input field.
   const appearance = {
     theme: 'flat' as const,
     variables: {
@@ -140,7 +138,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       borderRadius: '8px',
       fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       spacingUnit: '4px',
-      fontSizeBase: '16px', // CRITICAL FOR MOBILE
+      fontSizeBase: '16px', // Critical for Mobile (No Zoom)
     },
     rules: {
       '.Input': {
@@ -148,7 +146,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         boxShadow: 'none',
         padding: '12px',
         transition: 'border 0.2s ease',
-        fontSize: '16px', // CRITICAL FOR MOBILE
+        fontSize: '16px', 
       },
       '.Input:focus': {
         border: '1px solid #B45309', 
@@ -214,12 +212,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       <SocialProofPopup />
 
       {/* --- HERO SECTION --- */}
-      {/* MOBILE FIX: Reduced padding (pt-10 -> pt-6) to save vertical space */}
       <section className="w-full bg-white pt-6 pb-8 md:pt-10 border-b border-gray-100 shadow-sm mb-6 md:mb-8">
         <div className="mx-auto max-w-full px-4 md:max-w-6xl md:px-6 text-center">
           
           {/* 1. THE NAVY LOGO */}
-          {/* MOBILE FIX: Smaller Logo (h-10) */}
           <div className="mb-6 flex justify-center animate-[fadeIn_0.6s_ease-out]">
              <img 
                src="https://res.cloudinary.com/dse1cikja/image/upload/v1767569445/BLUEPRINTAsset_6_u1gevt.png" 
@@ -228,13 +224,13 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              />
           </div>
 
-          {/* 2. THE HEADLINE */}
-          {/* MOBILE FIX: text-2xl on mobile, text-4xl on desktop. Prevents massive text wrapping. */}
+          {/* 2. THE HEADLINE: ORPHAN PROOFED */}
+          {/* We use whitespace-nowrap spans to force 'Probate Court' and 'First 48 Hours' to act as single unbreakable blocks */}
           <h1 className="mx-auto w-full font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-            Your Lawyer Prepared Your Family for the Probate&nbsp;Court.
-            {/* Break only on desktop */}
-            <br className="hidden md:block" />
+            Your Lawyer Prepared Your Family for the <span className="whitespace-nowrap">Probate Court.</span>
+            
             <span className="mt-2 block md:inline">
+              <span className="hidden md:inline">&nbsp;</span>
               But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block whitespace-nowrap">
                 First 48 Hours?
                 <svg className="absolute -bottom-1 left-0 w-full h-1.5 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
@@ -251,7 +247,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       </section>
 
       <div className="max-w-6xl mx-auto px-4 lg:px-8">
-        {/* MOBILE FIX: Reduced gap-14 to gap-8 */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* LEFT COLUMN: CHECKOUT FORM */}
@@ -271,7 +266,6 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                    </div>
                 </div>
 
-                {/* MOBILE FIX: Reduced padding from p-6 to p-5 for mobile width */}
                 <div className="p-5 md:p-8">
                     <Elements options={options} stripe={stripePromise}>
                       <CheckoutForm 
