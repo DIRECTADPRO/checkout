@@ -29,7 +29,7 @@ export default function CheckoutForm({
   const stripe = useStripe();
   const elements = useElements();
   
-  // CAPTURE THE NAME MANUALLY
+  // CAPTURE THE NAME MANUALLY (For Social Proof & Stripe Record)
   const [name, setName] = useState('');
   
   const [message, setMessage] = useState<string | null>(null);
@@ -95,8 +95,7 @@ export default function CheckoutForm({
          </div>
       </div>
 
-      {/* 2. ADDRESS (Billing or Shipping) */}
-      {/* WE ALWAYS SHOW THIS NOW to capture City/State for Proof */}
+      {/* 2. ADDRESS & PHONE (Billing or Shipping) */}
       <div className="mb-8 animate-[fadeIn_0.4s_ease-out]">
           <h3 className="block text-lg font-bold text-gray-900 mb-4 tracking-tight">
              {funnelConfig.requiresShipping ? 'Shipping Address' : 'Billing Address'}
@@ -104,7 +103,8 @@ export default function CheckoutForm({
           <AddressElement 
              options={{ 
                  mode: funnelConfig.requiresShipping ? 'shipping' : 'billing',
-                 fields: { phone: 'always' } // Optional: Collect phone too if you want
+                 // ENABLE PHONE NUMBER COLLECTION
+                 fields: { phone: 'always' }
              }} 
           />
       </div>
