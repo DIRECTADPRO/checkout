@@ -9,12 +9,12 @@ export const legacyBlueprint = {
     accentColor: "#D32F2F", 
     backgroundColor: "#FAFAFA", 
     logoUrl: "https://res.cloudinary.com/dse1cikja/image/upload/v1767295060/BLUEPRINTAsset_1_2x-8_vucxxa.png",
-    logoWidth: "180px"
+    logoWidth: "150px"
   },
 checkout: {
-  headline: "Your Lawyer Prepared Your Family for the Probate Court. But Who Prepares Them for the First 48 Hours?",
+  headline: "A Will is for What You Leave Behind. This is for Who You Leave Behind.",
   subhead: "Wills handle the wealth. The Manual handles the chaos. The comprehensive operational system that guides your family through the immediate crisis and the months of logistics that follow.",
-  productName: "The Legacy Blueprint (Red Protocol Edition)",
+  productName: "The Legacy Blueprint",
     
     price: 3700, 
     image: "https://res.cloudinary.com/dse1cikja/image/upload/v1767504021/BLUEPRINTAsset_4_2x-8_fqirpq.png", 
@@ -35,7 +35,7 @@ checkout: {
     stripePriceId: "price_1SkpGiKWkFGAPPbCu0hwJqTT",
     
     funnelType: 'digital_product', 
-    ctaText: "Secure My Survivor's Manual"
+    ctaText: "Get The Legacy Blueprint"
   },
   
 bump: {
