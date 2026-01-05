@@ -212,7 +212,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
       {/* --- HERO SECTION --- */}
       <section className="w-full bg-white pt-10 pb-8 border-b border-gray-100 shadow-sm mb-8">
-        {/* FIX: Increased max-width to 6xl so the headline has room to breathe */}
+        {/* FIX: Wider Container (max-w-6xl) */}
         <div className="mx-auto max-w-6xl px-6 text-center">
           
           {/* 1. THE NAVY LOGO */}
@@ -224,9 +224,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              />
           </div>
 
-          {/* 2. THE HEADLINE: FIXED WITH WIDER CONTAINER & HARD BREAK */}
-          <h1 className="mx-auto max-w-5xl font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-            Your Lawyer Prepared Your Family for the Probate Court.
+          {/* 2. THE HEADLINE: FULL WIDTH + NON-BREAKING SPACE */}
+          {/* Removed max-w restriction on H1. Added &nbsp; between Probate and Court. */}
+          <h1 className="mx-auto w-full font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            Your Lawyer Prepared Your Family for the Probate&nbsp;Court.
             {/* HARD BREAK TO FORCE 2nd LINE BALANCE */}
             <br className="hidden md:block" />
             <span className="md:mt-2 block md:inline">
