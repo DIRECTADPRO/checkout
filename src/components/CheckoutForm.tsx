@@ -28,6 +28,10 @@ export default function CheckoutForm({
   
   const stripe = useStripe();
   const elements = useElements();
+  
+  // CAPTURE THE NAME MANUALLY
+  const [name, setName] = useState('');
+  
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -41,6 +45,11 @@ export default function CheckoutForm({
       elements,
       confirmParams: {
         return_url: `${window.location.origin}/success`,
+        payment_method_data: {
+            billing_details: {
+                name: name, // PASS THE NAME TO STRIPE
+            }
+        }
       },
     });
 
@@ -56,33 +65,53 @@ export default function CheckoutForm({
   return (
     <form id="payment-form" onSubmit={handleSubmit} className="w-full">
       
-      {/* --- CLEANER LAYOUT: REMOVED BONUS BANNER --- */}
-      
-      {/* 1. CONTACT INFORMATION */}
-      {/* Added 'mt-2' to give just a tiny breath from the header, but kept it tight */}
+      {/* 1. CUSTOMER INFORMATION (Email & Name) */}
       <div className="mb-8 mt-2">
-         <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
-            Contact Information
+         <h3 className="block text-lg font-bold text-gray-900 mb-4 tracking-tight">
+            Customer Information
          </h3>
-         <LinkAuthenticationElement 
-            id="link-authentication-element"
-            options={{ defaultValues: { email: '' } }} 
-         />
+         
+         {/* EMAIL (Stripe Link) */}
+         <div className="mb-4">
+             <label className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Email Address</label>
+             <LinkAuthenticationElement 
+                id="link-authentication-element"
+                options={{ defaultValues: { email: '' } }} 
+             />
+         </div>
+
+         {/* FULL NAME (Custom Input) */}
+         <div className="mb-2">
+            <label htmlFor="fullName" className="block text-sm font-semibold text-gray-700 mb-1.5 ml-1">Full Name</label>
+            <input 
+                id="fullName"
+                type="text" 
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="John Doe"
+                required
+                className="w-full p-3 bg-[#F9FAFB] border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-amber-500 focus:border-amber-500 transition-all outline-none font-sans text-[16px]"
+            />
+         </div>
       </div>
 
-      {/* 2. SHIPPING (Conditional) */}
-      {funnelConfig.requiresShipping && (
-         <div className="mb-8 animate-[fadeIn_0.4s_ease-out]">
-             <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
-                Shipping Address
-             </h3>
-             <AddressElement options={{ mode: 'shipping' }} />
-         </div>
-      )}
+      {/* 2. ADDRESS (Billing or Shipping) */}
+      {/* WE ALWAYS SHOW THIS NOW to capture City/State for Proof */}
+      <div className="mb-8 animate-[fadeIn_0.4s_ease-out]">
+          <h3 className="block text-lg font-bold text-gray-900 mb-4 tracking-tight">
+             {funnelConfig.requiresShipping ? 'Shipping Address' : 'Billing Address'}
+          </h3>
+          <AddressElement 
+             options={{ 
+                 mode: funnelConfig.requiresShipping ? 'shipping' : 'billing',
+                 fields: { phone: 'always' } // Optional: Collect phone too if you want
+             }} 
+          />
+      </div>
 
       {/* 3. PAYMENT DETAILS */}
       <div className="mb-8">
-        <h3 className="block text-lg font-bold text-gray-900 mb-3 tracking-tight">
+        <h3 className="block text-lg font-bold text-gray-900 mb-4 tracking-tight">
             Payment Details
         </h3>
         <PaymentElement id="payment-element" options={{layout: "tabs"}} />
