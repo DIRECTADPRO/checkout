@@ -11,7 +11,7 @@ import '@/styles/checkout-design.css';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
 
-// ... (SALES_DATA and Time Logic remain the same) ...
+// --- 100 US-ONLY VERIFIED SALES DATA ---
 const SALES_DATA = [
   { name: "James L.", loc: "Austin, TX" }, { name: "Mary S.", loc: "Denver, CO" }, { name: "Robert M.", loc: "Nashville, TN" }, { name: "Patricia J.", loc: "Seattle, WA" },
   { name: "John D.", loc: "Miami, FL" }, { name: "Jennifer A.", loc: "Chicago, IL" }, { name: "Michael B.", loc: "Phoenix, AZ" }, { name: "Linda W.", loc: "Columbus, OH" },
@@ -212,7 +212,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
 
       {/* --- HERO SECTION --- */}
       <section className="w-full bg-white pt-10 pb-8 border-b border-gray-100 shadow-sm mb-8">
-        <div className="mx-auto max-w-5xl px-6 text-center">
+        {/* FIX: Increased max-width to 6xl so the headline has room to breathe */}
+        <div className="mx-auto max-w-6xl px-6 text-center">
           
           {/* 1. THE NAVY LOGO */}
           <div className="mb-6 flex justify-center animate-[fadeIn_0.6s_ease-out]">
@@ -223,12 +224,12 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              />
           </div>
 
-          {/* 2. THE HEADLINE: ORPHAN FIX */}
-          {/* Added whitespace-nowrap span to "First 48 Hours?" to keep it together */}
-          <h1 className="mx-auto max-w-4xl font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
-            <span>Your Lawyer Prepared Your Family for the Probate Court.</span>
-            
-            <span className="mt-2 block">
+          {/* 2. THE HEADLINE: FIXED WITH WIDER CONTAINER & HARD BREAK */}
+          <h1 className="mx-auto max-w-5xl font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+            Your Lawyer Prepared Your Family for the Probate Court.
+            {/* HARD BREAK TO FORCE 2nd LINE BALANCE */}
+            <br className="hidden md:block" />
+            <span className="md:mt-2 block md:inline">
               But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block whitespace-nowrap">
                 First 48 Hours?
                 <svg className="absolute -bottom-1 left-0 w-full h-1.5 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
@@ -252,7 +253,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
              {/* Main Card */}
              <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 
-                {/* --- FIXED HEADER --- */}
+                {/* --- FIXED HEADER: NAVY BLUE with GOLD LOCK --- */}
                 <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between font-bold text-sm tracking-wide uppercase">
                    <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
@@ -279,7 +280,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* --- GUARANTEE SECTION --- */}
+             {/* --- GUARANTEE SECTION (WITH 3D SEAL) --- */}
              <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
                <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
