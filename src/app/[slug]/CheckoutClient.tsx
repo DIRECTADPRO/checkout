@@ -99,7 +99,7 @@ const SocialProofPopup = () => {
   if (!visible) return null;
 
   return (
-    <div className="fixed bottom-6 left-6 z-50 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-lg p-4 flex items-center gap-4 animate-[slideUp_0.5s_ease-out] max-w-xs cursor-default">
+    <div className="fixed bottom-6 left-6 right-6 md:right-auto md:w-auto z-50 bg-white border border-gray-100 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-lg p-4 flex items-center gap-4 animate-[slideUp_0.5s_ease-out] cursor-default">
       <div className="bg-emerald-50 p-2 rounded-full text-emerald-600 flex-shrink-0">
         <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
       </div>
@@ -129,16 +129,18 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       setAmount(checkout.price);
   }
 
-  // AESTHETIC FIX: Custom Stripe Appearance for "Executive" Look
+  // --- MOBILE OPTIMIZATION: INPUT FONT SIZE 16px ---
+  // This prevents iOS from zooming in when the user taps an input field.
   const appearance = {
     theme: 'flat' as const,
     variables: {
       colorPrimary: '#B45309', // Legacy Gold
-      colorBackground: '#F9FAFB', // Light Gray Input Background
-      colorText: '#18181B', // Zinc-900
+      colorBackground: '#F9FAFB', 
+      colorText: '#18181B', 
       borderRadius: '8px',
       fontFamily: 'ui-sans-serif, system-ui, sans-serif',
       spacingUnit: '4px',
+      fontSizeBase: '16px', // CRITICAL FOR MOBILE
     },
     rules: {
       '.Input': {
@@ -146,9 +148,10 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
         boxShadow: 'none',
         padding: '12px',
         transition: 'border 0.2s ease',
+        fontSize: '16px', // CRITICAL FOR MOBILE
       },
       '.Input:focus': {
-        border: '1px solid #B45309', // Gold focus ring
+        border: '1px solid #B45309', 
         boxShadow: '0 0 0 2px rgba(180, 83, 9, 0.1)',
       },
       '.Label': {
@@ -211,26 +214,27 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       <SocialProofPopup />
 
       {/* --- HERO SECTION --- */}
-      <section className="w-full bg-white pt-10 pb-8 border-b border-gray-100 shadow-sm mb-8">
-        {/* FIX: Wider Container (max-w-6xl) */}
-        <div className="mx-auto max-w-6xl px-6 text-center">
+      {/* MOBILE FIX: Reduced padding (pt-10 -> pt-6) to save vertical space */}
+      <section className="w-full bg-white pt-6 pb-8 md:pt-10 border-b border-gray-100 shadow-sm mb-6 md:mb-8">
+        <div className="mx-auto max-w-full px-4 md:max-w-6xl md:px-6 text-center">
           
           {/* 1. THE NAVY LOGO */}
+          {/* MOBILE FIX: Smaller Logo (h-10) */}
           <div className="mb-6 flex justify-center animate-[fadeIn_0.6s_ease-out]">
              <img 
                src="https://res.cloudinary.com/dse1cikja/image/upload/v1767569445/BLUEPRINTAsset_6_u1gevt.png" 
                alt="The Legacy Blueprint" 
-               className="h-12 w-auto object-contain" 
+               className="h-10 md:h-12 w-auto object-contain" 
              />
           </div>
 
-          {/* 2. THE HEADLINE: FULL WIDTH + NON-BREAKING SPACE */}
-          {/* Removed max-w restriction on H1. Added &nbsp; between Probate and Court. */}
-          <h1 className="mx-auto w-full font-serif text-3xl font-bold tracking-tight text-slate-900 md:text-4xl leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
+          {/* 2. THE HEADLINE */}
+          {/* MOBILE FIX: text-2xl on mobile, text-4xl on desktop. Prevents massive text wrapping. */}
+          <h1 className="mx-auto w-full font-serif text-2xl md:text-3xl lg:text-4xl font-bold tracking-tight text-slate-900 leading-[1.2] animate-[fadeIn_0.8s_ease-out_0.2s_both]">
             Your Lawyer Prepared Your Family for the Probate&nbsp;Court.
-            {/* HARD BREAK TO FORCE 2nd LINE BALANCE */}
+            {/* Break only on desktop */}
             <br className="hidden md:block" />
-            <span className="md:mt-2 block md:inline">
+            <span className="mt-2 block md:inline">
               But Who Prepares Them for the <span className="text-amber-700 italic relative inline-block whitespace-nowrap">
                 First 48 Hours?
                 <svg className="absolute -bottom-1 left-0 w-full h-1.5 text-amber-200 opacity-50" viewBox="0 0 100 10" preserveAspectRatio="none"><path d="M0 5 Q 50 10 100 5" stroke="currentColor" strokeWidth="3" fill="none" /></svg>
@@ -247,15 +251,16 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
       </section>
 
       <div className="max-w-6xl mx-auto px-4 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-start">
+        {/* MOBILE FIX: Reduced gap-14 to gap-8 */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
           
           {/* LEFT COLUMN: CHECKOUT FORM */}
-          <div className="lg:col-span-7 xl:col-span-8">
+          <div className="lg:col-span-7 xl:col-span-8 order-1">
              {/* Main Card */}
              <div className="bg-white rounded-xl shadow-[0_2px_15px_-3px_rgba(0,0,0,0.07),0_10px_20px_-2px_rgba(0,0,0,0.04)] border border-gray-100 overflow-hidden">
                 
-                {/* --- FIXED HEADER: NAVY BLUE with GOLD LOCK --- */}
-                <div className="bg-gray-900 text-white px-6 py-4 flex items-center justify-between font-bold text-sm tracking-wide uppercase">
+                {/* --- FIXED HEADER --- */}
+                <div className="bg-gray-900 text-white px-5 py-4 flex items-center justify-between font-bold text-sm tracking-wide uppercase">
                    <div className="flex items-center gap-2">
                       <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
                       <span>Secure Checkout</span>
@@ -266,7 +271,8 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                    </div>
                 </div>
 
-                <div className="p-6">
+                {/* MOBILE FIX: Reduced padding from p-6 to p-5 for mobile width */}
+                <div className="p-5 md:p-8">
                     <Elements options={options} stripe={stripePromise}>
                       <CheckoutForm 
                           amountInCents={amount} 
@@ -281,11 +287,11 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                 </div>
              </div>
 
-             {/* --- GUARANTEE SECTION (WITH 3D SEAL) --- */}
-             <div className="mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
+             {/* --- GUARANTEE SECTION --- */}
+             <div className="mt-8 md:mt-12 group relative overflow-hidden rounded-2xl border border-gray-200 bg-white p-6 md:p-8 shadow-sm transition-all hover:shadow-md hover:border-gray-300">
                <div className="absolute top-0 right-0 -mt-4 -mr-4 h-32 w-32 rounded-full bg-gray-50 opacity-50 blur-2xl transition-opacity group-hover:opacity-100"></div>
                <div className="relative z-10 flex flex-col md:flex-row items-start gap-6">
-                 <div className="flex-shrink-0">
+                 <div className="flex-shrink-0 mx-auto md:mx-0">
                    {product.checkout.guaranteeBadge ? (
                      <img 
                        src={product.checkout.guaranteeBadge} 
@@ -299,7 +305,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                      </div>
                    )}
                  </div>
-                 <div className="flex-1">
+                 <div className="flex-1 text-center md:text-left">
                    <h3 className="font-serif text-xl font-bold text-gray-900 mb-2">
                      The "Sleep Well At Night" 365-Day Promise
                    </h3>
@@ -308,7 +314,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
                      <p><strong className="text-gray-900">Here is the deal:</strong> Download the Survivor's Manual. Fill it out. If you don't feel an immediate, physical weight lift off your shoulders—or if your family doesn't thank you for it—simply email us.</p>
                      <p>We will refund <span className="underline decoration-yellow-400 decoration-2 font-medium text-gray-900">100% of your money</span>. No questions asked. And you can <strong className="text-gray-900">keep the files</strong> as our apology for wasting your time.</p>
                    </div>
-                   <div className="mt-6 flex items-center gap-3 pt-6 border-t border-gray-100">
+                   <div className="mt-6 flex items-center justify-center md:justify-start gap-3 pt-6 border-t border-gray-100">
                       <div className="h-px w-8 bg-gray-900"></div>
                       <span className="font-serif italic text-gray-900 text-lg">The Founders</span>
                    </div>
@@ -318,7 +324,7 @@ export default function CheckoutClient({ product }: { product: ProductConfig }) 
           </div>
           
           {/* RIGHT COLUMN: SIDEBAR */}
-          <div className="lg:col-span-5 xl:col-span-4 space-y-8">
+          <div className="lg:col-span-5 xl:col-span-4 space-y-8 order-2">
             
             {/* PRODUCT CARD - NAVY HEADER */}
             <div className="bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden sticky top-6">
